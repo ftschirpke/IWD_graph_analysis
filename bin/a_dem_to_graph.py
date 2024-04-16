@@ -11,11 +11,12 @@ from scipy.ndimage.morphology import generate_binary_structure
 import sknw
 import networkx as nx
 from scipy import ndimage
-import gdal
+from osgeo import gdal
 from osgeo import gdal_array
 from affine import Affine
 from pathlib import Path
 from datetime import datetime
+import matplotlib.pyplot as plt  # remove later
 
 startTime = datetime.now()
 
@@ -176,7 +177,7 @@ def save_graph_with_coords(graph, dict, location):
     '''
     # save and write Graph as list of edges
     # edge weight 'weight' stores the actual length of the trough in meter
-    nx.write_edgelist(graph, location + '.edgelist', data=True)
+    nx.write_edgelist(graph, location[:-4] + '.edgelist', data=True)
 
     # and save coordinates of graph as npy dict to disk
     fname = location + '_node-coords'
@@ -230,25 +231,36 @@ def get_graph_from_dtm(raster_ds_path):
     :return dictio: dictionary containing information
     on the edge parameters of H.
     '''
+    detn = 16
+    ada1 = 133
+    ada2 = 2
+    gau = 5
     # read in digital terrain model. once as georeferenced
     # raster, once as spatial-less np.array.
-    fname = (Path(raster_ds_path).stem)
+    fname = Path(raster_ds_path).stem
+    print(fname)
     dtm = gdal.Open(raster_ds_path)
     dtm_np = gdal_array.LoadFile(raster_ds_path)
     # detrend the image to return microtopographic image only
-    img_det = detrend_dtm(dtm_np, 16)
-    # save microtopographic image for later use
-    write_geotiff('/figures/outputs/detrended/' + fname + '_detr.tif', img_det, dtm)
-    # write_geotiff('E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/figures/outputs/img_det.tif', img_det, dtm)
+    img_det = detrend_dtm(dtm_np, detn)
+    img_det = scipy.ndimage.gaussian_filter(img_det, gau)
 
+
+    # save microtopographic image for later use
+    # write_geotiff('/figures/outputs/detrended/' + fname + '_detr.tif', img_det, dtm)
+
+    write_geotiff('E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/test_to_del/' + fname + '_detr_' + str(detn) + '_gauss_' + str(gau) + '.tif', img_det, dtm)
+    # plt.Figure()
+    # plt.imshow(img_det)
+    # plt.show()
     # doing adaptive thresholding on the input image
     thresh2 = cv2.adaptiveThreshold(img_det, img_det.max(), cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV,
-                                    133, 11)
+                                    ada1, ada2)
     thresh_unclustered = eliminate_small_clusters(thresh2, 15)
 
     # erode and dilate the features to deal with white noise.
     kernel = np.ones((3, 3), np.uint8)
-    its = 2
+    its = 1
     for i in range(1):
         img = cv2.dilate(np.float32(thresh_unclustered), kernel, iterations=its)
         closed = cv2.erode(img, kernel, iterations=its)
@@ -262,7 +274,10 @@ def get_graph_from_dtm(raster_ds_path):
 
     skel_clu_elim_25 = eliminate_small_clusters(img_skel, 10)
 
-    write_geotiff('/figures/outputs/skeleton/' + fname + '_skel.tif', skel_clu_elim_25, dtm)
+    write_geotiff('E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/test_to_del/' + fname + '_skel ' + str(ada1) + '_' + str(ada2) + '_' + str(its) + '_gauss_' + str(gau) + '.tif', skel_clu_elim_25, dtm)
+    # plt.Figure()
+    # plt.imshow(skel_clu_elim_25)
+    # plt.show()
 
     # build graph from skeletonized image
     G = sknw.build_sknw(skel_clu_elim_25, multi=False)
@@ -291,16 +306,25 @@ def get_graph_from_dtm(raster_ds_path):
     dictio = get_node_coord_dict(H, fwd)
 
     save_graph_with_coords(H, dictio, '/data/graphs/' + fname)
+    # save_graph_with_coords(H, dictio,'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/test_to_del/' + fname + '_graph.tif')
 
     dtm = None
     return H, dictio
 
 
 if __name__ == '__main__':
-    # @Jonathan: hier will ich nun entweder eine einzelne file analysieren,
-    # oder eben eine liste oder alle dateien aus einem directory.
-    # wie mache ich das am besten mit sys.argv?
+    version = sys.argv[2]
+    
+    year = ''
+    
+    if version == '1':
+        year = sys.argv[1].split(".")[0].split("_")[2]
+    elif version == '2':
+        year = sys.argv[1].split(".")[0].split("PERMAX_")[1]
+
+
     raster_ds_path = sys.argv[1]
+    # raster_ds_path = rf'E:\02_macs_fire_sites\00_working\00_orig-data\03_lidar\product-dem\dtm_1m\proj\cut_to_aoi\PERMAX5_epsg32603_noa_88-99_c.tif'
 
     # raster_ds_path = r'E:\02_macs_fire_sites\00_working\00_orig-data\03_lidar\product-dem\dtm_1m\proj\cut_to_aoi\PERMAX1_epsg32603_csp_54_a.tif'
     H, dictio = get_graph_from_dtm(raster_ds_path)

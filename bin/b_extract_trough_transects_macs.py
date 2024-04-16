@@ -149,13 +149,9 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     transect_loc = list(zip(x, y))
                     t_type = "vertical"
                     t_cat = "a"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
-                    # in the trough.
-                    if len(set(transect_heights)) <= width:
+                    # alternative approach to water detection based on MACS Orthos
+                    if water_np[water_px_current] == 1:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario b; transect is vertical
                 elif px_prev[0] == px_subs[0] and px_prev[0] != px_current[0]:
@@ -173,13 +169,9 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     transect_loc = list(zip(x, y))
                     t_type = "vertical"
                     t_cat = "b"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
-                    # in the trough.
-                    if len(set(transect_heights)) <= width:
+                    # alternative approach to water detection based on MACS Orthos
+                    if water_np[water_px_current] == 1:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario e; transect is vertical
                 elif px_prev[0] != px_current[0] and px_prev[1] != px_current[1] and px_subs[0] == px_current[0] and px_subs[1] != px_current[1]:
@@ -197,13 +189,9 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     transect_loc = list(zip(x, y))
                     t_type = "vertical"
                     t_cat = "e"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
-                    # in the trough.
-                    if len(set(transect_heights)) <= width:
+                    # alternative approach to water detection based on MACS Orthos
+                    if water_np[water_px_current] == 1:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario d; transect is vertical
                 elif px_prev[0] == px_current[0] and px_prev[1] != px_current[1] and px_subs[0] != px_current[0] and px_subs[1] != px_current[1]:
@@ -221,13 +209,9 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     transect_loc = list(zip(x, y))
                     t_type = "vertical"
                     t_cat = "d"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
-                    # in the trough.
-                    if len(set(transect_heights)) <= width:
+                    # alternative approach to water detection based on MACS Orthos
+                    if water_np[water_px_current] == 1:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario a; transect is horizontal
                 elif px_prev[1] == px_current[1] == px_subs[1]:
@@ -248,13 +232,9 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     transect_loc = list(zip(x, y))
                     t_type = "horizontal"
                     t_cat = "a"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
-                    # in the trough.
-                    if len(set(transect_heights)) <= width:
+                    # alternative approach to water detection based on MACS Orthos
+                    if water_np[water_px_current] == 1:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario b; transect is horizontal
                 elif px_prev[1] == px_subs[1] and px_prev[1] != px_current[1]:
@@ -272,13 +252,9 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     transect_loc = list(zip(x, y))
                     t_type = "horizontal"
                     t_cat = "b"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
-                    # in the trough.
-                    if len(set(transect_heights)) <= width:
+                    # alternative approach to water detection based on MACS Orthos
+                    if water_np[water_px_current] == 1:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario e; transect is horizontal
                 elif px_prev[0] != px_current[0] and px_prev[1] != px_current[1] and px_subs[1] == px_current[1] and px_subs[0] != px_current[0]:
@@ -296,13 +272,9 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     transect_loc = list(zip(x, y))
                     t_type = "horizontal"
                     t_cat = "e"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
-                    # in the trough.
-                    if len(set(transect_heights)) <= width:
+                    # alternative approach to water detection based on MACS Orthos
+                    if water_np[water_px_current] == 1:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario d; transect is horizontal
                 elif px_prev[1] == px_current[1] and px_prev[0] != px_current[0] and px_subs[0] != px_current[0] and px_subs[1] != px_current[1]:
@@ -320,13 +292,9 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     transect_loc = list(zip(x, y))
                     t_type = "horizontal"
                     t_cat = "d"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
-                    # in the trough.
-                    if len(set(transect_heights)) <= width:
+                    # alternative approach to water detection based on MACS Orthos
+                    if water_np[water_px_current] == 1:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario c; transect is diagonal
                 elif px_prev[0] > px_current[0] > px_subs[0] and px_prev[1] < px_current[1] < px_subs[1]:
@@ -339,13 +307,9 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     transect_loc = list(zip(x_rw, y_rw))
                     t_type = "diagonal"  # transect is ul to lr
                     t_cat = "c"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
-                    # in the trough.
-                    if len(set(transect_heights)) <= width:
+                    # alternative approach to water detection based on MACS Orthos
+                    if water_np[water_px_current] == 1:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario c; transect is diagonal
                 elif px_prev[0] < px_current[0] < px_subs[0] and px_prev[1] > px_current[1] > px_subs[1]:
@@ -358,13 +322,9 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     transect_loc = list(zip(x_rw, y_rw))
                     t_type = "diagonal"  # transect is ul to lr
                     t_cat = "c"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
-                    # in the trough.
-                    if len(set(transect_heights)) <= width:
+                    # alternative approach to water detection based on MACS Orthos
+                    if water_np[water_px_current] == 1:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario c; transect is diagonal
                 elif px_prev[0] < px_current[0] < px_subs[0] and px_prev[1] < px_current[1] < px_subs[1]:
@@ -377,13 +337,9 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     transect_loc = list(zip(x_rw, y_rw))
                     t_type = "diagonal"  # transect is ll to ur
                     t_cat = "c"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
-                    # in the trough.
-                    if len(set(transect_heights)) <= width:
+                    # alternative approach to water detection based on MACS Orthos
+                    if water_np[water_px_current] == 1:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario c; transect is diagonal
                 elif px_prev[0] > px_current[0] > px_subs[0] and px_prev[1] > px_current[1] > px_subs[1]:
@@ -396,13 +352,9 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     transect_loc = list(zip(x_rw, y_rw))
                     t_type = "diagonal"  # transect is ll to ur
                     t_cat = "c"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
-                    # in the trough.
-                    if len(set(transect_heights)) <= width:
+                    # alternative approach to water detection based on MACS Orthos
+                    if water_np[water_px_current] == 1:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # for catching errors...
                 else:
@@ -449,9 +401,10 @@ if __name__ == '__main__':
     edgelistFile = sys.argv[3]
     npyFile = sys.argv[1]
     dtmTifFile = sys.argv[2]
-    year = npyFile.split(".")[0].split("_")[2]
+    waterFile = sys.argv[4]
+    # year = npyFile.split(".")[0].split("_")[2]
 
-    version = sys.argv[4]
+    version = sys.argv[5]  # !! Ich habe hier die argv Reihenfolge geaendert! @ Jonathan, bitte nochmal checken ;)
 
     year = ''
 
@@ -460,13 +413,14 @@ if __name__ == '__main__':
     elif version == '2':
         year = npyFile.split(".")[0][12:]
 
-    # # edgelistFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/graphs/arf_graph_2009.edgelist'
+    # edgelistFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/graphs/arf_graph_2009.edgelist'
     # edgelistFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/graphs/arf_graph_2009.edgelist'
-    # # npyFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/graphs/arf_graph_2009_node-coords.npy'
+    # npyFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/graphs/arf_graph_2009_node-coords.npy'
     # npyFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/graphs/arf_graph_2009_node-coords.npy'
     # dtmTifFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/arf_dtm_2009.tif'
     # year = 2009
-        
+    # waterFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/arf_macs_ortho_cog_water.tif'
+
     do_analysis(edgelistFile, npyFile, dtmTifFile, year, waterFile)
 
     print(datetime.now() - startTime)

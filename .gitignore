@@ -2,3 +2,6 @@ __pycache__/
 venv/
 .idea/
 figures/
+data_arf/
+test_to_del/
+thresh)
