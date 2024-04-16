@@ -103,9 +103,9 @@ def create_line_shp_edges(edge_info_df, save_loc_shp):
 if __name__ == '__main__':
     startTime = datetime.now()
 
-    # edgelist = sys.argv[1]
-    # npy = sys.argv[2]
-    # weighted_graph_edgelist = sys.argv[3]
+    edgelist = sys.argv[1]
+    npy = sys.argv[2]
+    weighted_graph_edgelist = sys.argv[3]
 
     # edgelist = 'E:/02_macs_fire_sites/00_working/01_processed-data/06_workflow_outputs/03_graphs/arf_graph_1_epsg32603_csp_54_a.edgelist'
     # npy = 'E:/02_macs_fire_sites/00_working/01_processed-data/06_workflow_outputs/03_graphs/arf_graph_1_epsg32603_csp_54_a_node-coords.npy'
@@ -113,13 +113,13 @@ if __name__ == '__main__':
 
     
 
-    edgelist = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/graphs/arf_graph_2009.edgelist'
-    npy = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/graphs/arf_graph_2009_node-coords.npy'
-    weighted_graph_edgelist = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/graphs/arf_graph_2009_run20240327_avg_weights.edgelist'
+    # edgelist = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/graphs/arf_graph_2009.edgelist'
+    # npy = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/graphs/arf_graph_2009_node-coords.npy'
+    # weighted_graph_edgelist = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/graphs/arf_graph_2009_run20240327_avg_weights.edgelist'
 
-    # year = edgelist.split('.')[0].split('_')[2]
-    # shp_loc = 'E:/02_macs_fire_sites/00_working/01_processed-data/06_workflow_outputs/03_graphs/gis_test/'
-    shp_loc = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/gis/'
+    # # year = edgelist.split('.')[0].split('_')[2]
+    # # shp_loc = 'E:/02_macs_fire_sites/00_working/01_processed-data/06_workflow_outputs/03_graphs/gis_test/'
+    # shp_loc = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/gis/'
 
     # read in 2009 datagraph_2009.csv
     G, coord_dict = read_graph(edgelist_loc=edgelist, coord_dict_loc=npy)
@@ -129,7 +129,7 @@ if __name__ == '__main__':
 
     # generate point-shapefile from nodes.
     # shp_loc = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/gis/'  # where to save
-    create_point_shp_nodes(coord_dict,aoiName + '_nodes.shp')
+    create_point_shp_nodes(coord_dict, aoiName + '_nodes.shp')
 
     # prepare for shapefiling edges
     # weighted_graph_edgelist = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/graphs/arf_graph_2009_avg_weights.edgelist'
