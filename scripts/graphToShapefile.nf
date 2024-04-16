@@ -1,18 +1,17 @@
 nextflow.enable.dsl=2
 
 process graphToShapefile {
-
+    publishDir 'output/shp', mode: 'copy', pattern: '*_edges.*'
+    publishDir 'output/shp', mode: 'copy', pattern: '*_nodes.*'
     container 'fondahub/iwd:latest'
 
     input:
-        path edgelist
-        path npy
-        path weighted_graph_edgelist
+        tuple val(key), path(npy), path(edgelist), path(weighted_graph_edgelist)
 
 
     output:
-        path "*nodes.shp", emit: nodes
-        path "*edges.shp", emit: edges
+        path "*nodes.*", emit: nodes
+        path "*edges.*", emit: edges
 
     script:
     """

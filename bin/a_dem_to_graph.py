@@ -15,6 +15,7 @@ from osgeo import gdal
 from osgeo import gdal_array
 from affine import Affine
 from pathlib import Path
+from pathlib import Path
 from datetime import datetime
 import matplotlib.pyplot as plt  # remove later
 
@@ -49,9 +50,12 @@ def detrend_dtm(dtm, trend_size):
     returns microtopography of DTM'''
     # there are some random nan rows and cols but they only affect the outermost rows. remove them here:
     subset = dtm[1:-1, 1:-1]
+    # there are some random nan rows and cols but they only affect the outermost rows. remove them here:
+    subset = dtm[1:-1, 1:-1]
     reg_trend = ndimage.uniform_filter(subset, size=trend_size)
     microtop = subset - reg_trend
     microtop = scale_data(microtop)
+    # adaptive threshhold (later) needs int
     # adaptive threshhold (later) needs int
     microtop = convert_to_int(microtop)
     return microtop
@@ -147,6 +151,7 @@ def get_node_coord_dict(graph, fwd):
     # get pixel coordinates of nodes --> ps
     ps = np.array([nodes[i]['o'] for i in nodes])
     # print(ps)
+    # print(ps)
     for i in ps:
         # print(i)
         # print('0000')
@@ -154,6 +159,7 @@ def get_node_coord_dict(graph, fwd):
         tfrm = fwd * (i[1], i[0])
         i[0] = tfrm[0]
         i[1] = tfrm[1]
+    # print(ps)
     # print(ps)
     # get node ID --> keys
     keys = list(range(len(nodes)))
@@ -207,6 +213,7 @@ def write_geotiff(out_ds_path, arr, in_ds):
     driver = gdal.GetDriverByName("GTiff")
     out_ds = driver.Create(out_ds_path, arr.shape[1], arr.shape[0], 1, arr_type)
     # print(in_ds.GetProjection())
+    # print(in_ds.GetProjection())
     out_ds.SetProjection(in_ds.GetProjection())
     out_ds.SetGeoTransform(in_ds.GetGeoTransform())
     band = out_ds.GetRasterBand(1)
@@ -237,22 +244,14 @@ def get_graph_from_dtm(raster_ds_path):
     gau = 5
     # read in digital terrain model. once as georeferenced
     # raster, once as spatial-less np.array.
-    fname = Path(raster_ds_path).stem
-    print(fname)
+    fname = (Path(raster_ds_path).stem)
     dtm = gdal.Open(raster_ds_path)
     dtm_np = gdal_array.LoadFile(raster_ds_path)
     # detrend the image to return microtopographic image only
-    img_det = detrend_dtm(dtm_np, detn)
-    img_det = scipy.ndimage.gaussian_filter(img_det, gau)
+    img_det = detrend_dtm(dtm_np, 16)
 
+    write_geotiff('arf_microtopo_' + year + '.tif', img_det, dtm)
 
-    # save microtopographic image for later use
-    # write_geotiff('/figures/outputs/detrended/' + fname + '_detr.tif', img_det, dtm)
-
-    write_geotiff('E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/test_to_del/' + fname + '_detr_' + str(detn) + '_gauss_' + str(gau) + '.tif', img_det, dtm)
-    # plt.Figure()
-    # plt.imshow(img_det)
-    # plt.show()
     # doing adaptive thresholding on the input image
     thresh2 = cv2.adaptiveThreshold(img_det, img_det.max(), cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV,
                                     ada1, ada2)
@@ -274,10 +273,8 @@ def get_graph_from_dtm(raster_ds_path):
 
     skel_clu_elim_25 = eliminate_small_clusters(img_skel, 10)
 
-    write_geotiff('E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/test_to_del/' + fname + '_skel ' + str(ada1) + '_' + str(ada2) + '_' + str(its) + '_gauss_' + str(gau) + '.tif', skel_clu_elim_25, dtm)
-    # plt.Figure()
-    # plt.imshow(skel_clu_elim_25)
-    # plt.show()
+    write_geotiff('' + fname + '_skel.tif', skel_clu_elim_25, dtm)
+
 
     # build graph from skeletonized image
     G = sknw.build_sknw(skel_clu_elim_25, multi=False)
@@ -326,8 +323,8 @@ if __name__ == '__main__':
     raster_ds_path = sys.argv[1]
     # raster_ds_path = rf'E:\02_macs_fire_sites\00_working\00_orig-data\03_lidar\product-dem\dtm_1m\proj\cut_to_aoi\PERMAX5_epsg32603_noa_88-99_c.tif'
 
-    # raster_ds_path = r'E:\02_macs_fire_sites\00_working\00_orig-data\03_lidar\product-dem\dtm_1m\proj\cut_to_aoi\PERMAX1_epsg32603_csp_54_a.tif'
-    H, dictio = get_graph_from_dtm(raster_ds_path)
 
+    # raster_ds_path = r'E:\02_macs_fire_sites\00_working\03_code_scripts\IWD_graph_analysis\data\arf_dtm_2009.tif'
+    H, dictio = get_graph_from_dtm(raster_ds_path, year)
     # print time needed for script execution
     print(datetime.now() - startTime)

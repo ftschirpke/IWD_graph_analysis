@@ -37,18 +37,21 @@ workflow {
     }
 
     demToGraph(data, version)
-    extractTroughTransects(demToGraph.out, version)
+    extractTroughTransects(demToGraph.out.tup, version)
     transectAnalysis(extractTroughTransects.out, version)
 
-    networkAnalysisInput = demToGraph.out.join(transectAnalysis.out)
+    networkAnalysisInput = demToGraph.out.tup.join(transectAnalysis.out)
 
     networkAnalysis(networkAnalysisInput, version)
-    //graphToShapefile(demToGraph.out.edgelist, demToGraph.out.npy, transectAnalysis.out)
 
-    csv = networkAnalysis.out.map{it[1]}flatten().buffer( size: Integer.MAX_VALUE, remainder: true )
+    graphToShapefileInput = demToGraph.out.tup.join(transectAnalysis.out)
+    graphToShapefileInput = graphToShapefileInput.join(networkAnalysis.out.weightedEdgelist)
+    graphToShapefileInput = graphToShapefileInput.map{it -> it[0,2,3,5]}
+
+    graphToShapefile(graphToShapefileInput)
+
+    csv = networkAnalysis.out.csvs.map{it[1]}flatten().buffer( size: Integer.MAX_VALUE, remainder: true )
 
     mergeAnalysisCSVs(csv)
-
-
 
 }
