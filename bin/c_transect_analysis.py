@@ -809,7 +809,6 @@ def plot_legend(transect_dict_orig_fitted_09, transect_dict_orig_fitted_19):
 
 
 def do_analysis(transectFile, aoi, fit_gaussian=True):
-    # 2019
     if fit_gaussian:
         transect_dict = load_obj(transectFile)
         transect_dict_fitted = fit_gaussian_parallel(transect_dict)
