@@ -51,7 +51,7 @@ workflow {
 
     graphToShapefileInput = demToGraph.out.tup.join(transectAnalysis.out)
     graphToShapefileInput = graphToShapefileInput.join(networkAnalysis.out.weightedEdgelist)
-    graphToShapefileInput = graphToShapefileInput.map{it -> it[0,2,3,5]}
+    graphToShapefileInput = graphToShapefileInput.map{it -> it[0,2,3,6]}
 
     graphToShapefile(graphToShapefileInput)
 

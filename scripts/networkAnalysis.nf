@@ -5,7 +5,7 @@ process networkAnalysis {
     container 'fondahub/iwd:latest'
 
     input:
-        tuple val(key), path(tif), path(npy), path(edgelist), path(transect_dict_avg)
+        tuple val(key), path(tif), path(npy), path(edgelist), path(transect_dict_avg), path(transect_dict_fitted)
         val(version)
 
     output:

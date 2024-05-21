@@ -828,11 +828,9 @@ if __name__ == '__main__':
     pkl = sys.argv[1]
     version = sys.argv[2]
 
-    # year = ''
-    pattern = r'transect_dict_(\d{3})_'
-    # Search for the pattern in the filename
-    aoi = re.search(pattern, pkl)
-    
+
+
+    aoi = pkl.split(".")[0].split("_")[3]
     # if version == '1':
     #     year = sys.argv[1].split(".")[0].split("_")[3]
     # elif version == '2':

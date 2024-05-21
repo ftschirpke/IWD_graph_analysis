@@ -9,6 +9,7 @@ from affine import Affine
 from osgeo import gdal_array
 from osgeo import gdal
 from datetime import datetime
+import re
 
 # np.set_printoptions(threshold=sys.maxsize)
 
@@ -409,21 +410,17 @@ if __name__ == '__main__':
     edgelistFile = sys.argv[3]
     npyFile = sys.argv[2]
     dtmTifFile = sys.argv[1]
-    year = npyFile.split(".")[0].split("_")[2]
 
     version = sys.argv[4]
 
-    year = ''
+    pattern = r'aoi_(\d{3})_skel.tif'
 
-    if version == '1':
-        year = npyFile.split(".")[0].split("_")[2]
-    elif version == '2':
-        year = npyFile.split(".")[0][12:]
+    aoi = dtmTifFile.split(".")[0].split("_")[1]
 
     # edgelistFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/graphs/arf_graph_2009.edgelist'
     # npyFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/graphs/arf_graph_2009_node-coords.npy'
     # dtmTifFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/arf_dtm_2009.tif'
 
-    do_analysis(edgelistFile, npyFile, dtmTifFile, year)
+    do_analysis(edgelistFile, npyFile, dtmTifFile, aoi)
 
     print(datetime.now() - startTime)

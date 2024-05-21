@@ -1,8 +1,8 @@
 nextflow.enable.dsl=2
 
 process transectAnalysis {
-    publishDir 'output/dicts', mode: 'copy', pattern: '*transect_dict_fitted_*'
-    publishDir 'output/dicts', mode: 'copy', pattern: '*transect_dict_avg_*'
+    publishDir 'output/dicts_fitted', mode: 'copy', pattern: '*transect_dict_fitted_*'
+    publishDir 'output/dicts_avg', mode: 'copy', pattern: '*transect_dict_avg_*'
     container 'fondahub/iwd:latest'
 
     input:
