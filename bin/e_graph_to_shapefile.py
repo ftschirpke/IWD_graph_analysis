@@ -123,9 +123,9 @@ if __name__ == '__main__':
 
     # read in 2009 datagraph_2009.csv
     G, coord_dict = read_graph(edgelist_loc=edgelist, coord_dict_loc=npy)
-
-    aoiName = edgelist.split('.')[0].split('_')[4] + "_" + edgelist.split('.')[0].split('_')[5] + "_" + edgelist.split('.')[0].split('_')[6]
-
+    print(edgelist)
+    #aoiName = edgelist.split('.')[0].split('_')[4] + "_" + edgelist.split('.')[0].split('_')[5] + "_" + edgelist.split('.')[0].split('_')[6]
+    aoiName = edgelist.split('.')[0]
 
     # generate point-shapefile from nodes.
     # shp_loc = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/gis/'  # where to save

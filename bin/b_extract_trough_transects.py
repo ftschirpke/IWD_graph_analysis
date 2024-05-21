@@ -9,7 +9,6 @@ from affine import Affine
 from osgeo import gdal_array
 from osgeo import gdal
 from datetime import datetime
-import pdb
 
 # np.set_printoptions(threshold=sys.maxsize)
 
@@ -68,7 +67,7 @@ def retrieve_world_coords(pixel_coord, data_source):
     return world_coord
 
 
-def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
+def get_transects(graph, dtm_np, dtm, width):
     ''' extract the height from DEM along transects
     perpendicular to the trough line (the graph edge)
 
@@ -124,8 +123,6 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
 
             # subset square is needed for diagonal calculation --> subset_dtm_np
             subset_dtm_np = dtm_np[px_current[0] - width:px_current[0] + width + 1, px_current[1] - width:px_current[1] + width + 1]
-            water_px_current = retrieve_pixel_coords(px_current_rw, water_r)
-            # pdb.set_trace()
 
             # make sure to not consider any cases at the border of the image
             # to avoid only partial transects
@@ -153,9 +150,6 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     # in the trough.
                     if len(set(transect_heights)) <= width:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario b; transect is vertical
                 elif px_prev[0] == px_subs[0] and px_prev[0] != px_current[0]:
@@ -177,9 +171,6 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     # in the trough.
                     if len(set(transect_heights)) <= width:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario e; transect is vertical
                 elif px_prev[0] != px_current[0] and px_prev[1] != px_current[1] and px_subs[0] == px_current[0] and px_subs[1] != px_current[1]:
@@ -201,9 +192,6 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     # in the trough.
                     if len(set(transect_heights)) <= width:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario d; transect is vertical
                 elif px_prev[0] == px_current[0] and px_prev[1] != px_current[1] and px_subs[0] != px_current[0] and px_subs[1] != px_current[1]:
@@ -225,9 +213,6 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     # in the trough.
                     if len(set(transect_heights)) <= width:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario a; transect is horizontal
                 elif px_prev[1] == px_current[1] == px_subs[1]:
@@ -252,9 +237,6 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     # in the trough.
                     if len(set(transect_heights)) <= width:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario b; transect is horizontal
                 elif px_prev[1] == px_subs[1] and px_prev[1] != px_current[1]:
@@ -276,9 +258,6 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     # in the trough.
                     if len(set(transect_heights)) <= width:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario e; transect is horizontal
                 elif px_prev[0] != px_current[0] and px_prev[1] != px_current[1] and px_subs[1] == px_current[1] and px_subs[0] != px_current[0]:
@@ -300,9 +279,6 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     # in the trough.
                     if len(set(transect_heights)) <= width:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario d; transect is horizontal
                 elif px_prev[1] == px_current[1] and px_prev[0] != px_current[0] and px_subs[0] != px_current[0] and px_subs[1] != px_current[1]:
@@ -324,9 +300,6 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     # in the trough.
                     if len(set(transect_heights)) <= width:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario c; transect is diagonal
                 elif px_prev[0] > px_current[0] > px_subs[0] and px_prev[1] < px_current[1] < px_subs[1]:
@@ -343,9 +316,6 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     # in the trough.
                     if len(set(transect_heights)) <= width:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario c; transect is diagonal
                 elif px_prev[0] < px_current[0] < px_subs[0] and px_prev[1] > px_current[1] > px_subs[1]:
@@ -362,9 +332,6 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     # in the trough.
                     if len(set(transect_heights)) <= width:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario c; transect is diagonal
                 elif px_prev[0] < px_current[0] < px_subs[0] and px_prev[1] < px_current[1] < px_subs[1]:
@@ -381,9 +348,6 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     # in the trough.
                     if len(set(transect_heights)) <= width:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario c; transect is diagonal
                 elif px_prev[0] > px_current[0] > px_subs[0] and px_prev[1] > px_current[1] > px_subs[1]:
@@ -400,9 +364,6 @@ def get_transects(graph, dtm_np, dtm, water_np, water_r, width):
                     # in the trough.
                     if len(set(transect_heights)) <= width:
                         water = True
-                    # # alternative approach to water detection based on MACS Orthos
-                    # if water_np[water_px_current] == 1:
-                    #     water = True
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # for catching errors...
                 else:
@@ -430,17 +391,15 @@ def save_obj(obj, name):
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 
-def do_analysis(edgelistFile, npyFile, dtmTifFile, year, waterFile):
+def do_analysis(edgelistFile, npyFile, dtmTifFile, year):
     H, coord_dict = read_graph(edgelist_loc=edgelistFile, coord_dict_loc=npyFile)
 
     dtm = gdal.Open(dtmTifFile)
     dtm_np = gdal_array.LoadFile(dtmTifFile)
-    water = gdal.Open(waterFile)
-    water_np = gdal_array.LoadFile(waterFile)
     # extract transects of 9 meter width: (trough_width*2 + 1 == 9)
     trough_width = 4
-    transect_dict = get_transects(H, dtm_np, dtm, water_np, water, trough_width)
-    save_obj(transect_dict, f'arf_transect_dict_{year}_run20240327')
+    transect_dict = get_transects(H, dtm_np, dtm, trough_width)
+    save_obj(transect_dict, 'arf_transect_dict_'+ year)
 
 
 if __name__ == '__main__':
@@ -461,13 +420,10 @@ if __name__ == '__main__':
     elif version == '2':
         year = npyFile.split(".")[0][12:]
 
-    # # edgelistFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/graphs/arf_graph_2009.edgelist'
-    # edgelistFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/graphs/arf_graph_2009.edgelist'
-    # # npyFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/graphs/arf_graph_2009_node-coords.npy'
-    # npyFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/graphs/arf_graph_2009_node-coords.npy'
-    # dtmTifFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/arf_dtm_2009.tif'
-    # year = 2009
-        
-    do_analysis(edgelistFile, npyFile, dtmTifFile, year, waterFile)
+    # edgelistFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/graphs/arf_graph_2009.edgelist'
+    # npyFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/graphs/arf_graph_2009_node-coords.npy'
+    # dtmTifFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/arf_dtm_2009.tif'
+
+    do_analysis(edgelistFile, npyFile, dtmTifFile, year)
 
     print(datetime.now() - startTime)

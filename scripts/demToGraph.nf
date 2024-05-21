@@ -13,7 +13,7 @@ process demToGraph {
 
     output:
     tuple val(key), path("*skel.tif"), path("*.npy"), path("*.edgelist"), emit:tup
-    path("*_?.tif")
+    path("*_*.tif")
 
     script:
     """

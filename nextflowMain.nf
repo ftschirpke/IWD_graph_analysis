@@ -13,7 +13,7 @@ include { graphToShapefile } from './scripts/graphToShapefile'
 //Main workflow
 workflow {
 
-    version = 2
+    version = 3
 
     if(params.version && params.version <= 2 && params.version >= 1) {
         version = params.version
@@ -32,6 +32,11 @@ workflow {
         data = Channel.fromPath( 'data/v'+ version +'/*dtm*.tif' ).map { file ->
         print(file.getName())
                return new Tuple(file.getName().split("\\.")[0].substring(8), file)
+            }
+
+    } else if (version == 3) {
+        data = Channel.fromPath( 'data/new/aoi*.tif' ).map { file ->
+               return new Tuple(file.getName(), file)
             }
 
     }

@@ -183,7 +183,8 @@ def save_graph_with_coords(graph, dict, location):
     '''
     # save and write Graph as list of edges
     # edge weight 'weight' stores the actual length of the trough in meter
-    nx.write_edgelist(graph, location[:-4] + '.edgelist', data=True)
+
+    nx.write_edgelist(graph, location + '.edgelist', data=True)
 
     # and save coordinates of graph as npy dict to disk
     fname = location + '_node-coords'
@@ -221,7 +222,7 @@ def write_geotiff(out_ds_path, arr, in_ds):
     band.FlushCache()
 
 
-def get_graph_from_dtm(raster_ds_path):
+def get_graph_from_dtm(raster_ds_path, year):
     ''' takes a georeferneced digital terrain
     model and with some image processing extracts
     the graph of the polygonal trough networks in
@@ -238,10 +239,6 @@ def get_graph_from_dtm(raster_ds_path):
     :return dictio: dictionary containing information
     on the edge parameters of H.
     '''
-    detn = 16
-    ada1 = 133
-    ada2 = 2
-    gau = 5
     # read in digital terrain model. once as georeferenced
     # raster, once as spatial-less np.array.
     fname = (Path(raster_ds_path).stem)
@@ -254,12 +251,12 @@ def get_graph_from_dtm(raster_ds_path):
 
     # doing adaptive thresholding on the input image
     thresh2 = cv2.adaptiveThreshold(img_det, img_det.max(), cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV,
-                                    ada1, ada2)
+                                    133, 11)
     thresh_unclustered = eliminate_small_clusters(thresh2, 15)
 
     # erode and dilate the features to deal with white noise.
     kernel = np.ones((3, 3), np.uint8)
-    its = 1
+    its = 2
     for i in range(1):
         img = cv2.dilate(np.float32(thresh_unclustered), kernel, iterations=its)
         closed = cv2.erode(img, kernel, iterations=its)
@@ -302,11 +299,11 @@ def get_graph_from_dtm(raster_ds_path):
     # save graph and node coordinates
     dictio = get_node_coord_dict(H, fwd)
 
-    save_graph_with_coords(H, dictio, '/data/graphs/' + fname)
-    # save_graph_with_coords(H, dictio,'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/test_to_del/' + fname + '_graph.tif')
+    save_graph_with_coords(H, dictio, 'arf_graph_' + year)
 
     dtm = None
     return H, dictio
+
 
 
 if __name__ == '__main__':
@@ -318,8 +315,10 @@ if __name__ == '__main__':
         year = sys.argv[1].split(".")[0].split("_")[2]
     elif version == '2':
         year = sys.argv[1].split(".")[0].split("PERMAX_")[1]
+    elif version == '3':
+        year = sys.argv[1].split(".")[0].split("_")[1]
 
-
+    print(year)
     raster_ds_path = sys.argv[1]
     # raster_ds_path = rf'E:\02_macs_fire_sites\00_working\00_orig-data\03_lidar\product-dem\dtm_1m\proj\cut_to_aoi\PERMAX5_epsg32603_noa_88-99_c.tif'
 
