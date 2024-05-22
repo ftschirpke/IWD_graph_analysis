@@ -42,7 +42,7 @@ workflow {
     }
 
     demToGraph(data, version)
-    extractTroughTransects(demToGraph.out.tup, version)
+    extractTroughTransects(data.join(demToGraph.out.tup), version)
     transectAnalysis(extractTroughTransects.out, version)
 
     networkAnalysisInput = demToGraph.out.tup.join(transectAnalysis.out)
