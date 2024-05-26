@@ -4,6 +4,8 @@ process graphToShapefile {
     publishDir 'output/shp', mode: 'copy', pattern: '*_edges.*'
     publishDir 'output/shp', mode: 'copy', pattern: '*_nodes.*'
     container 'fondahub/iwd:latest'
+    memory '300 MB'
+    cpus 2
 
     input:
         tuple val(key), path(npy), path(edgelist), path(weighted_graph_edgelist)

@@ -4,6 +4,8 @@ process transectAnalysis {
     publishDir 'output/dicts_fitted', mode: 'copy', pattern: '*transect_dict_fitted_*'
     publishDir 'output/dicts_avg', mode: 'copy', pattern: '*transect_dict_avg_*'
     container 'fondahub/iwd:latest'
+    memory '4 GB'
+    cpus 4
 
     input:
         tuple val(key), path(pkl)

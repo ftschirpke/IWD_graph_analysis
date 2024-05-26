@@ -3,6 +3,8 @@ nextflow.enable.dsl=2
 process mergeAnalysisCSVs {
     publishDir 'output/csv', mode: 'copy'
     container 'fondahub/iwd:latest'
+    memory '500 MB'
+    cpus 4
 
     input:
         path("*")
