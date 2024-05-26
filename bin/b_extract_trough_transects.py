@@ -10,6 +10,7 @@ from osgeo import gdal_array
 from osgeo import gdal
 from datetime import datetime
 import re
+from collections import Counter
 
 # np.set_printoptions(threshold=sys.maxsize)
 
@@ -67,6 +68,13 @@ def retrieve_world_coords(pixel_coord, data_source):
     world_coord = int(px), int(py)
     return world_coord
 
+# Function to check for neighboring same values
+def has_neighboring_duplicates(values):
+    for i in range(len(values) - 1):
+        mean_elev = np.mean(values)
+        if values[i] == values[i + 1] and values[i] < mean_elev:
+            return True
+    return False
 
 def get_transects(graph, dtm_np, dtm, width):
     ''' extract the height from DEM along transects
@@ -147,10 +155,10 @@ def get_transects(graph, dtm_np, dtm, width):
                     transect_loc = list(zip(x, y))
                     t_type = "vertical"
                     t_cat = "a"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
+                    # if two neighboring transect pixels have the same height value, we assume that there is water
                     # in the trough.
-                    if len(set(transect_heights)) <= width:
-                        water = True
+                    transect_heights_rd = [round(height_val, 2) for height_val in transect_heights]
+                    water = has_neighboring_duplicates(transect_heights_rd)
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario b; transect is vertical
                 elif px_prev[0] == px_subs[0] and px_prev[0] != px_current[0]:
@@ -168,10 +176,10 @@ def get_transects(graph, dtm_np, dtm, width):
                     transect_loc = list(zip(x, y))
                     t_type = "vertical"
                     t_cat = "b"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
+                    # if two neighboring transect pixels have the same height value, we assume that there is water
                     # in the trough.
-                    if len(set(transect_heights)) <= width:
-                        water = True
+                    transect_heights_rd = [round(height_val, 2) for height_val in transect_heights]
+                    water = has_neighboring_duplicates(transect_heights_rd)
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario e; transect is vertical
                 elif px_prev[0] != px_current[0] and px_prev[1] != px_current[1] and px_subs[0] == px_current[0] and px_subs[1] != px_current[1]:
@@ -189,10 +197,10 @@ def get_transects(graph, dtm_np, dtm, width):
                     transect_loc = list(zip(x, y))
                     t_type = "vertical"
                     t_cat = "e"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
+                    # if two neighboring transect pixels have the same height value, we assume that there is water
                     # in the trough.
-                    if len(set(transect_heights)) <= width:
-                        water = True
+                    transect_heights_rd = [round(height_val, 2) for height_val in transect_heights]
+                    water = has_neighboring_duplicates(transect_heights_rd)
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario d; transect is vertical
                 elif px_prev[0] == px_current[0] and px_prev[1] != px_current[1] and px_subs[0] != px_current[0] and px_subs[1] != px_current[1]:
@@ -210,10 +218,10 @@ def get_transects(graph, dtm_np, dtm, width):
                     transect_loc = list(zip(x, y))
                     t_type = "vertical"
                     t_cat = "d"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
+                    # if two neighboring transect pixels have the same height value, we assume that there is water
                     # in the trough.
-                    if len(set(transect_heights)) <= width:
-                        water = True
+                    transect_heights_rd = [round(height_val, 2) for height_val in transect_heights]
+                    water = has_neighboring_duplicates(transect_heights_rd)
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario a; transect is horizontal
                 elif px_prev[1] == px_current[1] == px_subs[1]:
@@ -234,10 +242,10 @@ def get_transects(graph, dtm_np, dtm, width):
                     transect_loc = list(zip(x, y))
                     t_type = "horizontal"
                     t_cat = "a"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
+                    # if two neighboring transect pixels have the same height value, we assume that there is water
                     # in the trough.
-                    if len(set(transect_heights)) <= width:
-                        water = True
+                    transect_heights_rd = [round(height_val, 2) for height_val in transect_heights]
+                    water = has_neighboring_duplicates(transect_heights_rd)
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario b; transect is horizontal
                 elif px_prev[1] == px_subs[1] and px_prev[1] != px_current[1]:
@@ -255,10 +263,10 @@ def get_transects(graph, dtm_np, dtm, width):
                     transect_loc = list(zip(x, y))
                     t_type = "horizontal"
                     t_cat = "b"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
+                    # if two neighboring transect pixels have the same height value, we assume that there is water
                     # in the trough.
-                    if len(set(transect_heights)) <= width:
-                        water = True
+                    transect_heights_rd = [round(height_val, 2) for height_val in transect_heights]
+                    water = has_neighboring_duplicates(transect_heights_rd)
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario e; transect is horizontal
                 elif px_prev[0] != px_current[0] and px_prev[1] != px_current[1] and px_subs[1] == px_current[1] and px_subs[0] != px_current[0]:
@@ -276,10 +284,10 @@ def get_transects(graph, dtm_np, dtm, width):
                     transect_loc = list(zip(x, y))
                     t_type = "horizontal"
                     t_cat = "e"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
+                    # if two neighboring transect pixels have the same height value, we assume that there is water
                     # in the trough.
-                    if len(set(transect_heights)) <= width:
-                        water = True
+                    transect_heights_rd = [round(height_val, 2) for height_val in transect_heights]
+                    water = has_neighboring_duplicates(transect_heights_rd)
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario d; transect is horizontal
                 elif px_prev[1] == px_current[1] and px_prev[0] != px_current[0] and px_subs[0] != px_current[0] and px_subs[1] != px_current[1]:
@@ -297,10 +305,10 @@ def get_transects(graph, dtm_np, dtm, width):
                     transect_loc = list(zip(x, y))
                     t_type = "horizontal"
                     t_cat = "d"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
+                    # if two neighboring transect pixels have the same height value, we assume that there is water
                     # in the trough.
-                    if len(set(transect_heights)) <= width:
-                        water = True
+                    transect_heights_rd = [round(height_val, 2) for height_val in transect_heights]
+                    water = has_neighboring_duplicates(transect_heights_rd)
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario c; transect is diagonal
                 elif px_prev[0] > px_current[0] > px_subs[0] and px_prev[1] < px_current[1] < px_subs[1]:
@@ -313,10 +321,10 @@ def get_transects(graph, dtm_np, dtm, width):
                     transect_loc = list(zip(x_rw, y_rw))
                     t_type = "diagonal"  # transect is ul to lr
                     t_cat = "c"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
+                    # if two neighboring transect pixels have the same height value, we assume that there is water
                     # in the trough.
-                    if len(set(transect_heights)) <= width:
-                        water = True
+                    transect_heights_rd = [round(height_val, 2) for height_val in transect_heights]
+                    water = has_neighboring_duplicates(transect_heights_rd)
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario c; transect is diagonal
                 elif px_prev[0] < px_current[0] < px_subs[0] and px_prev[1] > px_current[1] > px_subs[1]:
@@ -329,10 +337,10 @@ def get_transects(graph, dtm_np, dtm, width):
                     transect_loc = list(zip(x_rw, y_rw))
                     t_type = "diagonal"  # transect is ul to lr
                     t_cat = "c"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
+                    # if two neighboring transect pixels have the same height value, we assume that there is water
                     # in the trough.
-                    if len(set(transect_heights)) <= width:
-                        water = True
+                    transect_heights_rd = [round(height_val, 2) for height_val in transect_heights]
+                    water = has_neighboring_duplicates(transect_heights_rd)
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario c; transect is diagonal
                 elif px_prev[0] < px_current[0] < px_subs[0] and px_prev[1] < px_current[1] < px_subs[1]:
@@ -345,10 +353,10 @@ def get_transects(graph, dtm_np, dtm, width):
                     transect_loc = list(zip(x_rw, y_rw))
                     t_type = "diagonal"  # transect is ll to ur
                     t_cat = "c"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
+                    # if two neighboring transect pixels have the same height value, we assume that there is water
                     # in the trough.
-                    if len(set(transect_heights)) <= width:
-                        water = True
+                    transect_heights_rd = [round(height_val, 2) for height_val in transect_heights]
+                    water = has_neighboring_duplicates(transect_heights_rd)
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # this is scenario c; transect is diagonal
                 elif px_prev[0] > px_current[0] > px_subs[0] and px_prev[1] > px_current[1] > px_subs[1]:
@@ -361,10 +369,10 @@ def get_transects(graph, dtm_np, dtm, width):
                     transect_loc = list(zip(x_rw, y_rw))
                     t_type = "diagonal"  # transect is ll to ur
                     t_cat = "c"
-                    # if more then half of the transect pixels have the same height value, we assume that there is water
+                    # if two neighboring transect pixels have the same height value, we assume that there is water
                     # in the trough.
-                    if len(set(transect_heights)) <= width:
-                        water = True
+                    transect_heights_rd = [round(height_val, 2) for height_val in transect_heights]
+                    water = has_neighboring_duplicates(transect_heights_rd)
                     values_inner.append([transect_heights, transect_loc, t_type, t_cat, water])
                 # for catching errors...
                 else:
