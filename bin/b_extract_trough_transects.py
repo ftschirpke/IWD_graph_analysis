@@ -70,13 +70,15 @@ def retrieve_world_coords(pixel_coord, data_source):
     world_coord = int(px), int(py)
     return world_coord
 
-# Function to check for neighboring same values
+
 def has_neighboring_duplicates(values):
+    ''' checks for neighboring same values'''
     for i in range(len(values) - 1):
         mean_elev = np.mean(values)
         if values[i] == values[i + 1] and values[i] < mean_elev:
             return True
     return False
+
 
 def get_transects(graph, dtm_np, dtm, width):
     ''' extract the height from DEM along transects
@@ -122,14 +124,14 @@ def get_transects(graph, dtm_np, dtm, width):
         # for i in ps:
         #     print(i)
         #     retrieve_pixel_coords(i, dtm)
-        for i in range(1, len(ps)-1):
+        for i in range(1, len(ps) - 1):
             water = False
             keys_inner.append((int(ps[i][0]), int(ps[i][1])))  # x and y coordinates of each of my current edge pixels
             px_current_rw = (int(ps[i][0]), int(ps[i][1]))  # coords of pixel p
             px_current = retrieve_pixel_coords(px_current_rw, dtm)
-            px_prev_rw = (int(ps[i-1][0]), int(ps[i-1][1]))  # coords of pixel p-1
+            px_prev_rw = (int(ps[i - 1][0]), int(ps[i - 1][1]))  # coords of pixel p-1
             px_prev = retrieve_pixel_coords(px_prev_rw, dtm)
-            px_subs_rw = (int(ps[i+1][0]), int(ps[i+1][1]))  # coords of pixel p+1
+            px_subs_rw = (int(ps[i + 1][0]), int(ps[i + 1][1]))  # coords of pixel p+1
             px_subs = retrieve_pixel_coords(px_subs_rw, dtm)
 
             # subset square is needed for diagonal calculation --> subset_dtm_np
@@ -138,7 +140,7 @@ def get_transects(graph, dtm_np, dtm, width):
             # make sure to not consider any cases at the border of the image
             # to avoid only partial transects
             # if minx + width < px_current[0] < maxx-width and miny < px_current[1] < maxy-width:
-            if width < px_current[0] < dtm_np.shape[0]-width and width < px_current[1] < dtm_np.shape[1]-width:
+            if width < px_current[0] < dtm_np.shape[0] - width and width < px_current[1] < dtm_np.shape[1] - width:
                 # now consider the five possible scenarios (see publication for details)
                 # if p, p+1 and p-1 are in the same row (so x-value is the same), do:
                 # this is scenario a; transect is vertical
@@ -152,8 +154,8 @@ def get_transects(graph, dtm_np, dtm, width):
 
                     # extract the height information from the DEM at the transect locations
                     transect_heights = dtm_np[trans_start:trans_end + 1, cons]
-                    x = list(range(trans_start_rw, trans_end_rw+1))
-                    y = [cons_rw]*len(x)
+                    x = list(range(trans_start_rw, trans_end_rw + 1))
+                    y = [cons_rw] * len(x)
                     transect_loc = list(zip(x, y))
                     t_type = "vertical"
                     t_cat = "a"
@@ -173,8 +175,8 @@ def get_transects(graph, dtm_np, dtm, width):
 
                     # extract the height information from the DEM at the transect locations
                     transect_heights = dtm_np[trans_start:trans_end + 1, cons]
-                    x = list(range(trans_start_rw, trans_end_rw+1))
-                    y = [cons_rw]*len(x)
+                    x = list(range(trans_start_rw, trans_end_rw + 1))
+                    y = [cons_rw] * len(x)
                     transect_loc = list(zip(x, y))
                     t_type = "vertical"
                     t_cat = "b"
@@ -194,8 +196,8 @@ def get_transects(graph, dtm_np, dtm, width):
 
                     # extract the height information from the DEM at the transect locations
                     transect_heights = dtm_np[trans_start:trans_end + 1, cons]
-                    x = list(range(trans_start_rw, trans_end_rw+1))
-                    y = [cons_rw]*len(x)
+                    x = list(range(trans_start_rw, trans_end_rw + 1))
+                    y = [cons_rw] * len(x)
                     transect_loc = list(zip(x, y))
                     t_type = "vertical"
                     t_cat = "e"
@@ -215,8 +217,8 @@ def get_transects(graph, dtm_np, dtm, width):
 
                     # extract the height information from the DEM at the transect locations
                     transect_heights = dtm_np[trans_start:trans_end + 1, cons]
-                    x = list(range(trans_start_rw, trans_start_rw+1))
-                    y = [trans_start_rw]*len(x)
+                    x = list(range(trans_start_rw, trans_start_rw + 1))
+                    y = [trans_start_rw] * len(x)
                     transect_loc = list(zip(x, y))
                     t_type = "vertical"
                     t_cat = "d"
@@ -239,8 +241,8 @@ def get_transects(graph, dtm_np, dtm, width):
                     # print(f'trans_start: {trans_start}')
                     # print(f'trans_end: {trans_end}')
                     transect_heights = dtm_np[cons, trans_start:trans_end + 1]
-                    y = list(range(trans_start_rw, trans_end_rw+1))
-                    x = [cons_rw]*len(y)
+                    y = list(range(trans_start_rw, trans_end_rw + 1))
+                    x = [cons_rw] * len(y)
                     transect_loc = list(zip(x, y))
                     t_type = "horizontal"
                     t_cat = "a"
@@ -260,8 +262,8 @@ def get_transects(graph, dtm_np, dtm, width):
 
                     # extract the height information from the DEM at the transect locations
                     transect_heights = dtm_np[cons, trans_start:trans_end + 1]
-                    y = list(range(trans_start_rw, trans_end_rw+1))
-                    x = [cons_rw]*len(y)
+                    y = list(range(trans_start_rw, trans_end_rw + 1))
+                    x = [cons_rw] * len(y)
                     transect_loc = list(zip(x, y))
                     t_type = "horizontal"
                     t_cat = "b"
@@ -281,8 +283,8 @@ def get_transects(graph, dtm_np, dtm, width):
 
                     # extract the height information from the DEM at the transect locations
                     transect_heights = dtm_np[cons, trans_start:trans_end + 1]
-                    y = list(range(trans_start_rw, trans_end_rw+1))
-                    x = [cons_rw]*len(y)
+                    y = list(range(trans_start_rw, trans_end_rw + 1))
+                    x = [cons_rw] * len(y)
                     transect_loc = list(zip(x, y))
                     t_type = "horizontal"
                     t_cat = "e"
@@ -302,8 +304,8 @@ def get_transects(graph, dtm_np, dtm, width):
 
                     # extract the height information from the DEM at the transect locations
                     transect_heights = dtm_np[cons, trans_start:trans_end + 1]
-                    y = list(range(trans_start_rw, trans_end_rw+1))
-                    x = [cons_rw]*len(y)
+                    y = list(range(trans_start_rw, trans_end_rw + 1))
+                    x = [cons_rw] * len(y)
                     transect_loc = list(zip(x, y))
                     t_type = "horizontal"
                     t_cat = "d"
@@ -316,7 +318,7 @@ def get_transects(graph, dtm_np, dtm, width):
                 elif px_prev[0] > px_current[0] > px_subs[0] and px_prev[1] < px_current[1] < px_subs[1]:
                     transect_heights = subset_dtm_np.diagonal()
                     x = list(range(px_current[0] - width, px_current[0] + width + 1))
-                    y = list(range(px_current[1] - width,  px_current[1] + width + 1))
+                    y = list(range(px_current[1] - width, px_current[1] + width + 1))
                     x_rw = list(range(px_current_rw[0] - width, px_current_rw[0] + width + 1))
                     y_rw = list(range(px_current_rw[1] - width, px_current_rw[1] + width + 1))
 
@@ -332,7 +334,7 @@ def get_transects(graph, dtm_np, dtm, width):
                 elif px_prev[0] < px_current[0] < px_subs[0] and px_prev[1] > px_current[1] > px_subs[1]:
                     transect_heights = subset_dtm_np.diagonal()
                     x = list(range(px_current[0] - width, px_current[0] + width + 1))
-                    y = list(range(px_current[1] - width,  px_current[1] + width + 1))
+                    y = list(range(px_current[1] - width, px_current[1] + width + 1))
                     x_rw = list(range(px_current_rw[0] - width, px_current_rw[0] + width + 1))
                     y_rw = list(range(px_current_rw[1] - width, px_current_rw[1] + width + 1))
 
@@ -348,7 +350,7 @@ def get_transects(graph, dtm_np, dtm, width):
                 elif px_prev[0] < px_current[0] < px_subs[0] and px_prev[1] < px_current[1] < px_subs[1]:
                     transect_heights = np.fliplr(subset_dtm_np).diagonal()
                     x = list(range(px_current[0] - width, px_current[0] + width + 1))
-                    y = list(range(px_current[1] + width,  px_current[1] - (width + 1), -1))
+                    y = list(range(px_current[1] + width, px_current[1] - (width + 1), -1))
                     x_rw = list(range(px_current_rw[0] - width, px_current_rw[0] + width + 1))
                     y_rw = list(range(px_current_rw[1] + width, px_current_rw[1] - (width + 1), -1))
 
@@ -364,7 +366,7 @@ def get_transects(graph, dtm_np, dtm, width):
                 elif px_prev[0] > px_current[0] > px_subs[0] and px_prev[1] > px_current[1] > px_subs[1]:
                     transect_heights = np.fliplr(subset_dtm_np).diagonal()
                     x = list(range(px_current[0] - width, px_current[0] + width + 1))
-                    y = list(range(px_current[1] + width,  px_current[1] - (width + 1), -1))
+                    y = list(range(px_current[1] + width, px_current[1] - (width + 1), -1))
                     x_rw = list(range(px_current_rw[0] - width, px_current_rw[0] + width + 1))
                     y_rw = list(range(px_current_rw[1] + width, px_current_rw[1] - (width + 1), -1))
 
@@ -410,9 +412,7 @@ def do_analysis(edgelistFile: Path, npyFile: Path, dtmTifFile: Path, year: str):
     # extract transects of 9 meter width: (trough_width*2 + 1 == 9)
     trough_width = 4
     transect_dict = get_transects(H, dtm_np, dtm, trough_width)
-    save_obj(transect_dict, 'arf_transect_dict_'+ year)
-
-
+    save_obj(transect_dict, 'arf_transect_dict_' + year)
 
 
 def command_line_parser() -> argparse.ArgumentParser:
