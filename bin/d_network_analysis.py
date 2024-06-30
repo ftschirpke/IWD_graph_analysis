@@ -264,14 +264,14 @@ def main():
 
     number_of_edges, number_of_nodes, connected_comp, sinks, sources, e_pot, dens, total_channel_length = do_analysis(G_09)
 
-    with open('graph_' + args.tifFile.name + '.csv', 'w', newline='') as myfile:
+    with open('graph_' + args.tifFile.stem + '.csv', 'w', newline='') as myfile:
         wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
         wr.writerow([
             'name', 'number_of_edges', 'number_of_nodes', 'connected_comp', 'sinks', 'sources',
             'voronoi_edges', 'graph_density', 'total_channel_length_m'
         ])
         wr.writerow([
-            'arf_' + args.tifFile.name, number_of_edges, number_of_nodes, connected_comp, sinks, sources,
+            'arf_' + args.tifFile.stem, number_of_edges, number_of_nodes, connected_comp, sinks, sources,
             e_pot, dens, total_channel_length
         ])
 
