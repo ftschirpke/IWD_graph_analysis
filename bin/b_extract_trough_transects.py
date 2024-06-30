@@ -416,9 +416,7 @@ def do_analysis(edgelistFile: Path, npyFile: Path, dtmTifFile: Path, year: str):
 
 
 def command_line_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Automate common tasks for the SecLab course. Call with no arguments to login and upload the game.",
-    )
+    parser = argparse.ArgumentParser()
     parser.add_argument("dtmTifFile", type=Path)
     parser.add_argument("npyFile", type=Path)
     parser.add_argument("edgelistFile", type=Path)

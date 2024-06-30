@@ -306,10 +306,8 @@ def get_graph_from_dtm(raster_ds_path: Path, year: str):
 
 
 def command_line_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Automate common tasks for the SecLab course. Call with no arguments to login and upload the game.",
-    )
-    parser.add_argument("year_file", type=Path)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("yearFile", type=Path)
     parser.add_argument("year", type=str)
 
     return parser
@@ -321,7 +319,7 @@ def main():
 
     print(args.year)
 
-    H, dictio = get_graph_from_dtm(args.year_file, args.year)
+    H, dictio = get_graph_from_dtm(args.yearFile, args.year)
 
 
 if __name__ == '__main__':
