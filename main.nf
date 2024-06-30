@@ -60,17 +60,15 @@ workflow {
     extractTroughTransects(data.join(demToGraph.out.npy_edgelist_tup))
 
     transectAnalysis(extractTroughTransects.out)
-
     
     networkAnalysisInput = demToGraph.out.npy_edgelist_tup.join(demToGraph.out.skel_tup)
     networkAnalysisInput = networkAnalysisInput.join(transectAnalysis.out)
     networkAnalysis(networkAnalysisInput)
 
-    graphToShapefileInput = demToGraph.npy_edgelist_tup.join(networkAnalysis.out.weightedEdgelist)
+    graphToShapefileInput = demToGraph.out.npy_edgelist_tup.join(networkAnalysis.out.weightedEdgelist)
     graphToShapefile(graphToShapefileInput)
 
-    csv = networkAnalysis.out.csvs.map{it[1]}flatten().buffer( size: Integer.MAX_VALUE, remainder: true )
-
-    mergeAnalysisCSVs(csv)
+    csvs = networkAnalysis.out.csvs.flatten().buffer( size: Integer.MAX_VALUE, remainder: true )
+    mergeAnalysisCSVs(csvs)
 
 }

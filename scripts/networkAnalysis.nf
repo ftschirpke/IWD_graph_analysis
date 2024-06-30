@@ -10,7 +10,7 @@ process networkAnalysis {
         tuple val(key), path(npy), path(edgelist), path(tif), val(year), path(transect_dict_avg), path(transect_dict_fitted)
 
     output:
-        tuple val(key), path("graph_*.csv"), emit: csvs
+        path("graph_*.csv"), emit: csvs
         tuple val(key), path("*weights.edgelist"), emit: weightedEdgelist
 
     script:
