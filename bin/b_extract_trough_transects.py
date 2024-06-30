@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import argparse
+from pathlib import Path
 import numpy as np
 from PIL import Image
 import sys
@@ -15,7 +17,7 @@ from collections import Counter
 # np.set_printoptions(threshold=sys.maxsize)
 
 
-def read_graph(edgelist_loc, coord_dict_loc):
+def read_graph(edgelist_loc: Path, coord_dict_loc: Path):
     ''' load graph and dict containing coords
     of graph nodes
 
@@ -400,35 +402,44 @@ def save_obj(obj, name):
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 
-def do_analysis(edgelistFile, npyFile, dtmTifFile, year):
+def do_analysis(edgelistFile: Path, npyFile: Path, dtmTifFile: Path, year: str):
     H, coord_dict = read_graph(edgelist_loc=edgelistFile, coord_dict_loc=npyFile)
 
-    dtm = gdal.Open(dtmTifFile)
-    dtm_np = gdal_array.LoadFile(dtmTifFile)
+    dtm = gdal.Open(str(dtmTifFile))
+    dtm_np = gdal_array.LoadFile(str(dtmTifFile))
     # extract transects of 9 meter width: (trough_width*2 + 1 == 9)
     trough_width = 4
     transect_dict = get_transects(H, dtm_np, dtm, trough_width)
     save_obj(transect_dict, 'arf_transect_dict_'+ year)
 
 
+
+
+def command_line_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Automate common tasks for the SecLab course. Call with no arguments to login and upload the game.",
+    )
+    parser.add_argument("dtmTifFile", type=Path)
+    parser.add_argument("npyFile", type=Path)
+    parser.add_argument("edgelistFile", type=Path)
+    parser.add_argument("year", type=str)
+
+    return parser
+
+
+def main():
+    parser = command_line_parser()
+    args = parser.parse_args()
+
+    do_analysis(args.edgelistFile, args.npyFile, args.dtmTifFile, args.year)
+
+
 if __name__ == '__main__':
-    startTime = datetime.now()
-
-    # evtl. Fehler hier wegen der Änderungen
-    edgelistFile = sys.argv[3]
-    npyFile = sys.argv[2]
-    dtmTifFile = sys.argv[1]
-
-    version = sys.argv[4]
-
-    pattern = r'aoi_(\d{3})_skel.tif'
-
-    aoi = dtmTifFile.split(".")[0].split("_")[1]
-
-    # edgelistFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/graphs/arf_graph_2009.edgelist'
-    # npyFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/graphs/arf_graph_2009_node-coords.npy'
-    # dtmTifFile = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/arf_dtm_2009.tif'
-
-    do_analysis(edgelistFile, npyFile, dtmTifFile, aoi)
-
-    print(datetime.now() - startTime)
+    try:
+        startTime = datetime.now()
+        main()
+        print(datetime.now() - startTime)
+        sys.exit(0)
+    except Exception as ex:
+        print(f"Unexpected Error: {ex}")
+        sys.exit(1)
