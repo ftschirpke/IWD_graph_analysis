@@ -223,7 +223,7 @@ def write_geotiff(out_ds_path, arr, in_ds):
     band.FlushCache()
 
 
-def get_graph_from_dtm(raster_ds_path, year):
+def get_graph_from_dtm(raster_ds_path: Path, year: str):
     ''' takes a georeferneced digital terrain
     model and with some image processing extracts
     the graph of the polygonal trough networks in
@@ -242,9 +242,9 @@ def get_graph_from_dtm(raster_ds_path, year):
     '''
     # read in digital terrain model. once as georeferenced
     # raster, once as spatial-less np.array.
-    fname = (Path(raster_ds_path).stem)
-    dtm = gdal.Open(raster_ds_path)
-    dtm_np = gdal_array.LoadFile(raster_ds_path)
+    fname = raster_ds_path.stem
+    dtm = gdal.Open(str(raster_ds_path))
+    dtm_np = gdal_array.LoadFile(str(raster_ds_path))
     # detrend the image to return microtopographic image only
     img_det = detrend_dtm(dtm_np, 16)
 
@@ -309,8 +309,8 @@ def command_line_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Automate common tasks for the SecLab course. Call with no arguments to login and upload the game.",
     )
-    parser.add_argument("year-file", type=Path)
-    parser.add_argument("version", type=int, help="Either 1, 2, or 3")
+    parser.add_argument("year_file", type=Path)
+    parser.add_argument("year", type=str)
 
     return parser
 
@@ -319,23 +319,16 @@ def main():
     parser = command_line_parser()
     args = parser.parse_args()
 
-    if args.version == 1:
-        year = sys.argv[1].split(".")[0].split("_")[2]
-    elif args.version == 2:
-        year = sys.argv[1].split(".")[0].split("PERMAX_")[1]
-    elif args.version == 3:
-        year = sys.argv[1].split(".")[0].split("_")[1]
+    print(args.year)
 
-    print(year)
-    raster_ds_path = sys.argv[1]
-
-    H, dictio = get_graph_from_dtm(raster_ds_path, year)
-    print(datetime.now() - startTime)
+    H, dictio = get_graph_from_dtm(args.year_file, args.year)
 
 
 if __name__ == '__main__':
     try:
+        startTime = datetime.now()
         main()
+        print(datetime.now() - startTime)
         sys.exit(0)
     except Exception as ex:
         print(f"Unexpected Error: {ex}")

@@ -14,24 +14,24 @@ Tuple tuple_from_version1_file(Path file) {
     // TODO: clean up this code
     // this is simply copied from an older version to ensure that it works
     key = file.getName().split("\\.")[0].substring(8)
-    year = file.getName().split("_")[2]
-    new Tuple(key, year, file)
+    year = file.getName().split("\\.")[0].split("_")[2]
+    new Tuple(key, file, year)
 }
 
 Tuple tuple_from_version2_file(Path file) {
     // TODO: clean up this code
     // this is simply copied from an older version to ensure that it works
     key = file.getName().split("\\.")[0].substring(13)
-    year = file.getName().split("PERMAX_")[1]
-    new Tuple(key, year, file)
+    year = file.getName().split("\\.")[0].split("PERMAX_")[1]
+    new Tuple(key, file, year)
 }
 
 Tuple tuple_from_version3_file(Path file) {
     // TODO: clean up this code
     // this is simply copied from an older version to ensure that it works
     key = file.getName()
-    year = file.getName().split("_")[1]
-    new Tuple(key, year, file)
+    year = file.getName().split("\\.")[0].split("_")[1]
+    new Tuple(key, file, year)
 }
 
 
@@ -42,21 +42,26 @@ workflow {
     data = null
 
     if (params.version == 1) {
-        data = Channel.fromPath( 'data/v'+ params.version +'/*dtm*.tif' ).map { file ->
-            tuple_from_version1_file(file)
+        data = Channel.fromPath( 'data/v'+ params.version +'/*dtm*.tif' ).map {
+            file -> tuple_from_version1_file(file)
         }
     } else if (params.version == 2) {
-        data = Channel.fromPath( 'data/v'+ params.version +'/PERMAX*.tif' ).map { file ->
-            tuple_from_version2_file(file)
+        data = Channel.fromPath( 'data/v'+ params.version +'/PERMAX*.tif' ).map { 
+            file -> tuple_from_version2_file(file)
         }
     } else if (params.version == 3) {
-        data = Channel.fromPath( 'data/new/aoi*.tif' ).map { file ->
-            tuple_from_version2_file(file)
+        data = Channel.fromPath( 'data/new/aoi*.tif' ).map {
+            file -> tuple_from_version3_file(file)
         }
     }
 
-    demToGraph(data, params.version)
-    extractTroughTransects(data.join(demToGraph.out.tup), params.version)
+    data.view()
+
+    demToGraph(data)
+
+    data.join(demToGraph.out.tup).view()
+
+    extractTroughTransects(data.join(demToGraph.out.tup))
     transectAnalysis(extractTroughTransects.out, params.version)
 
     networkAnalysisInput = demToGraph.out.tup.join(transectAnalysis.out)
