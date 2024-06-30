@@ -13,7 +13,6 @@ process transectAnalysis {
     output:
         tuple val(key), path("*transect_dict_avg*"), path("*transect_dict_fitted_*"), emit: tup
         
-
     script:
     """
     c_transect_analysis.py ${pkl} ${year}

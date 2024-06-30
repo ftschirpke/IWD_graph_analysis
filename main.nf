@@ -64,11 +64,14 @@ workflow {
     extractTroughTransects(data.join(demToGraph.out.tup))
     transectAnalysis(extractTroughTransects.out)
 
-    networkAnalysisInput = demToGraph.out.tup.join(transectAnalysis.out)
+    networkAnalysisInput = demToGraph.out.tup.join(demToGraph.out.skel)
+    networkAnalysisInput = networkAnalysisInput.join(transectAnalysis.out)
+    networkAnalysisInput.view()
 
-    networkAnalysis(networkAnalysisInput, params.version)
+    networkAnalysis(networkAnalysisInput)
 
-    graphToShapefileInput = demToGraph.out.tup.join(transectAnalysis.out)
+    graphToShapefileInput = demToGraph.out.tup.join(demToGraph.out.skel)
+    graphToShapefileInput = graphToShapefileInput.join(transectAnalysis.out)
     graphToShapefileInput = graphToShapefileInput.join(networkAnalysis.out.weightedEdgelist)
     graphToShapefileInput = graphToShapefileInput.map{it -> it[0,2,3,6]}
 

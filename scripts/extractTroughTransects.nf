@@ -7,7 +7,7 @@ process extractTroughTransects {
     cpus 2
 
     input:
-        tuple val(key), file(tif), val(year), file(npy), file(edgelist)
+        tuple val(key), path(tif), val(year), path(npy), path(edgelist)
 
     output:
         tuple val(key), path("*.pkl"), val(year)

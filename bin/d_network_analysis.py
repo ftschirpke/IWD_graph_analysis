@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import argparse
+from pathlib import Path
 import sys
 import pickle
 import csv
@@ -10,8 +12,9 @@ from collections import Counter, OrderedDict
 from b_extract_trough_transects import read_graph
 from datetime import datetime
 
+
 def load_obj(name):
-    with open(name + '', 'rb') as f:
+    with open(name, 'rb') as f:
         return pickle.load(f)
 
 
@@ -127,7 +130,7 @@ def get_network_density(graph):
     # number of existing edges
     e_exist = nx.number_of_edges(graph)
     # number of potential edges
-    e_pot = 3/2 * (num_nodes+1)
+    e_pot = 3 / 2 * (num_nodes + 1)
     # density
     dens = e_exist / e_pot
     # print(f"num_nodes is: \n\t{num_nodes}")
@@ -234,48 +237,51 @@ def do_analysis(graph):
     return graph.number_of_edges(), graph.number_of_nodes(), connected_comp, sinks, sources, e_pot, dens, total_channel_length
 
 
-if __name__ == '__main__':
-    startTime = datetime.now()
+def command_line_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("tifFile", type=Path)
+    parser.add_argument("edgelistFile", type=Path)
+    parser.add_argument("npyFile", type=Path)
+    parser.add_argument("dictAvgFile", type=Path)
+    parser.add_argument("year", type=str)
 
-    tif = sys.argv[1]
-    edgelist = sys.argv[2]
-    npy = sys.argv[3]
-    dict_avg = sys.argv[4]
+    return parser
 
-    version = sys.argv[5]
 
-    year = ''
+def main():
+    np.set_printoptions(threshold=sys.maxsize)
 
-    if version == '1':
-        year = edgelist.split('.')[0].split('_')[2]
-    elif version == '2':
-        year = edgelist.split('.')[0][16:]
-
-    # year = '2009'
-
-    # edgelist = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/graphs/arf_graph_2009.edgelist'
-    # npy = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/graphs/arf_graph_2009_node-coords.npy'
-    # dict_avg = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/graphs/arf_transect_dict_avg_2009_run20240327.pkl'
+    parser = command_line_parser()
+    args = parser.parse_args()
 
     # read in 2009 data
-    G_09, coord_dict_09 = read_graph(edgelist_loc=edgelist,
-                                     coord_dict_loc=npy)
+    G_09, coord_dict_09 = read_graph(edgelist_loc=args.edgelistFile, coord_dict_loc=args.npyFile)
 
-
-    transect_dict_fitted_2009 = load_obj(dict_avg)
+    transect_dict_fitted_2009 = load_obj(args.dictAvgFile)
 
     G_upd = add_params_to_graph(G_09, transect_dict_fitted_2009)
-    nx.write_edgelist(G_upd, f'arf_graph_{year}_run20240327_avg_weights.edgelist', data=True, delimiter=';')
-                      # data=(('pts', list), ('weight', int), ('mean_width', float), ('median_width', float),
-                      #             ('mean_depth', float), ('median_depth', float), ('mean_r2', float), ('median_r2', float),
-                      #             ('considered_trans', int), ('water_filled', bool)))
+    nx.write_edgelist(G_upd, f'arf_graph_{args.year}_avg_weights.edgelist', data=True, delimiter=';')
 
     number_of_edges, number_of_nodes, connected_comp, sinks, sources, e_pot, dens, total_channel_length = do_analysis(G_09)
 
-    with open('graph_' + tif + '.csv', 'w', newline='') as myfile:
+    with open('graph_' + args.tifFile.name + '.csv', 'w', newline='') as myfile:
         wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-        wr.writerow(['name', 'number_of_edges', 'number_of_nodes', 'connected_comp', 'sinks', 'sources', 'voronoi_edges', 'graph_density', 'total_channel_length_m'])
-        wr.writerow(['arf_' + tif, number_of_edges, number_of_nodes, connected_comp, sinks, sources, e_pot, dens, total_channel_length])
+        wr.writerow([
+            'name', 'number_of_edges', 'number_of_nodes', 'connected_comp', 'sinks', 'sources',
+            'voronoi_edges', 'graph_density', 'total_channel_length_m'
+        ])
+        wr.writerow([
+            'arf_' + args.tifFile.name, number_of_edges, number_of_nodes, connected_comp, sinks, sources,
+            e_pot, dens, total_channel_length
+        ])
 
-    print(datetime.now() - startTime)
-    plt.show()
+
+if __name__ == '__main__':
+    try:
+        startTime = datetime.now()
+        main()
+        print(datetime.now() - startTime)
+        sys.exit(0)
+    except Exception as ex:
+        print(f"Unexpected Error: {ex}")
+        sys.exit(1)

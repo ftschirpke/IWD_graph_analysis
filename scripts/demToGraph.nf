@@ -10,11 +10,11 @@ process demToGraph {
     cpus 1
 
     input:
-        tuple val(key), file(yearFile), val(year)
+        tuple val(key), path(yearFile), val(year)
 
     output:
         tuple val(key), path("*.npy"), path("*.edgelist"), emit: tup
-        path("*skel.tif")
+        path("*skel.tif"), emit: skel
         path("*_*.tif")
 
     script:
