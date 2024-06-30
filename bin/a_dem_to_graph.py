@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import cv2
 import numpy as np
 from PIL import Image
@@ -272,7 +273,6 @@ def get_graph_from_dtm(raster_ds_path, year):
 
     write_geotiff('' + fname + '_skel.tif', skel_clu_elim_25, dtm)
 
-
     # build graph from skeletonized image
     G = sknw.build_sknw(skel_clu_elim_25, multi=False)
 
@@ -305,25 +305,38 @@ def get_graph_from_dtm(raster_ds_path, year):
     return H, dictio
 
 
+def command_line_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Automate common tasks for the SecLab course. Call with no arguments to login and upload the game.",
+    )
+    parser.add_argument("year-file", type=Path)
+    parser.add_argument("version", type=int, help="Either 1, 2, or 3")
 
-if __name__ == '__main__':
-    version = sys.argv[2]
-    
-    year = ''
-    
-    if version == '1':
+    return parser
+
+
+def main():
+    parser = command_line_parser()
+    args = parser.parse_args()
+
+    if args.version == 1:
         year = sys.argv[1].split(".")[0].split("_")[2]
-    elif version == '2':
+    elif args.version == 2:
         year = sys.argv[1].split(".")[0].split("PERMAX_")[1]
-    elif version == '3':
+    elif args.version == 3:
         year = sys.argv[1].split(".")[0].split("_")[1]
 
     print(year)
     raster_ds_path = sys.argv[1]
-    # raster_ds_path = rf'E:\02_macs_fire_sites\00_working\00_orig-data\03_lidar\product-dem\dtm_1m\proj\cut_to_aoi\PERMAX5_epsg32603_noa_88-99_c.tif'
 
-
-    # raster_ds_path = r'E:\02_macs_fire_sites\00_working\03_code_scripts\IWD_graph_analysis\data\arf_dtm_2009.tif'
     H, dictio = get_graph_from_dtm(raster_ds_path, year)
-    # print time needed for script execution
     print(datetime.now() - startTime)
+
+
+if __name__ == '__main__':
+    try:
+        main()
+        sys.exit(0)
+    except Exception as ex:
+        print(f"Unexpected Error: {ex}")
+        sys.exit(1)
