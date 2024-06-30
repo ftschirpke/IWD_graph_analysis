@@ -55,23 +55,16 @@ workflow {
         }
     }
 
-    data.view()
-
     demToGraph(data)
-
-    data.join(demToGraph.out.tup).view()
-
-    extractTroughTransects(data.join(demToGraph.out.tup))
+    extractTroughTransects(data.join(demToGraph.out.npy_edgelist_tup))
     transectAnalysis(extractTroughTransects.out)
 
-    networkAnalysisInput = demToGraph.out.tup.join(demToGraph.out.skel)
-    networkAnalysisInput = networkAnalysisInput.join(transectAnalysis.out)
-    networkAnalysisInput.view()
+    demToGraphInclSkel = demToGraph.out.npy_edgelist_tup.join(demToGraph.out.skel_tup)
 
+    networkAnalysisInput = demToGraphInclSkel.join(transectAnalysis.out)
     networkAnalysis(networkAnalysisInput)
 
-    graphToShapefileInput = demToGraph.out.tup.join(demToGraph.out.skel)
-    graphToShapefileInput = graphToShapefileInput.join(transectAnalysis.out)
+    graphToShapefileInput = demToGraphInclSkel.join(transectAnalysis.out)
     graphToShapefileInput = graphToShapefileInput.join(networkAnalysis.out.weightedEdgelist)
     graphToShapefileInput = graphToShapefileInput.map{it -> it[0,2,3,6]}
 

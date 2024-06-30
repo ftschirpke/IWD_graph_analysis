@@ -13,8 +13,8 @@ process demToGraph {
         tuple val(key), path(yearFile), val(year)
 
     output:
-        tuple val(key), path("*.npy"), path("*.edgelist"), emit: tup
-        path("*skel.tif"), emit: skel
+        tuple val(key), path("*.npy"), path("*.edgelist"), emit: npy_edgelist_tup
+        tuple val(key), path("*skel.tif"), emit: skel_tup
         path("*_*.tif")
 
     script:
