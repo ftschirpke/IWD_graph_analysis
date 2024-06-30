@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import argparse
+from pathlib import Path
 import sys
 import pickle
 import numpy as np
@@ -10,9 +12,6 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 import re
-
-startTime = datetime.now()
-np.set_printoptions(threshold=sys.maxsize)
 
 
 def load_obj(name):
@@ -808,37 +807,45 @@ def plot_legend(transect_dict_orig_fitted_09, transect_dict_orig_fitted_19):
     plt.savefig('./figures/legend.png')
 
 
-def do_analysis(transectFile, aoi, fit_gaussian=True):
+def do_analysis(transectFile: Path, year, fit_gaussian=True):
     if fit_gaussian:
         transect_dict = load_obj(transectFile)
         transect_dict_fitted = fit_gaussian_parallel(transect_dict)
         # save_obj(transect_dict_fitted, f'arf_transect_dict_fitted_{year}_run20240327')
-        save_obj(transect_dict_fitted, f'transect_dict_fitted_{aoi}')
+        save_obj(transect_dict_fitted, f'transect_dict_fitted_{year}')
 
     # transect_dict_fitted = load_obj(f'arf_transect_dict_fitted_{year}_run20240327.pkl')
-    transect_dict_fitted = load_obj(f'transect_dict_fitted_{aoi}.pkl')
+    transect_dict_fitted = load_obj(f'transect_dict_fitted_{year}.pkl')
     edge_param_dict = get_trough_avgs_gauss(transect_dict_fitted)
     # save_obj(edge_param_dict, f'arf_transect_dict_avg_{year}_run20240327')
-    save_obj(edge_param_dict, f'transect_dict_avg_{aoi}')
+    save_obj(edge_param_dict, f'transect_dict_avg_{year}')
 
     return transect_dict_fitted, edge_param_dict
 
 
+def command_line_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("pklFile", type=Path)
+    parser.add_argument("year", type=str)
+
+    return parser
+
+
+def main():
+    np.set_printoptions(threshold=sys.maxsize)
+
+    parser = command_line_parser()
+    args = parser.parse_args()
+
+    transect_dict_fitted, edge_param_dict = do_analysis(args.pklFile, args.year, True)
+
+
 if __name__ == '__main__':
-    pkl = sys.argv[1]
-    version = sys.argv[2]
-
-
-
-    aoi = pkl.split(".")[0].split("_")[3]
-    # if version == '1':
-    #     year = sys.argv[1].split(".")[0].split("_")[3]
-    # elif version == '2':
-    #     year = sys.argv[1].split(".")[0][22:]
-
-    # pkl = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/graphs/arf_transect_dict_2009_run20240327.pkl'
-
-    # transect_dict_fitted, edge_param_dict = do_analysis(pkl, year, True)
-    transect_dict_fitted, edge_param_dict = do_analysis(pkl, aoi, True)
-
-    print(datetime.now() - startTime)
+    try:
+        startTime = datetime.now()
+        main()
+        print(datetime.now() - startTime)
+        sys.exit(0)
+    except Exception as ex:
+        print(f"Unexpected Error: {ex}")
+        sys.exit(1)

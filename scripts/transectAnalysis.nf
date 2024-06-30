@@ -8,16 +8,15 @@ process transectAnalysis {
     cpus 10
 
     input:
-        tuple val(key), path(pkl)
-        val(version)
+        tuple val(key), path(pkl), val(year)
 
     output:
-        tuple val(key), path("*transect_dict_avg*"), path("*transect_dict_fitted_*"), emit: irgendwas
+        tuple val(key), path("*transect_dict_avg*"), path("*transect_dict_fitted_*"), emit: tup
         
 
     script:
     """
-    c_transect_analysis.py ${pkl} ${version}
+    c_transect_analysis.py ${pkl} ${year}
     """
 
 }

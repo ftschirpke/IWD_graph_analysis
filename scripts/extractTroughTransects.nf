@@ -10,7 +10,7 @@ process extractTroughTransects {
         tuple val(key), file(tif), val(year), file(npy), file(edgelist)
 
     output:
-        tuple val(key), path("*.pkl")
+        tuple val(key), path("*.pkl"), val(year)
 
     script:
     """
