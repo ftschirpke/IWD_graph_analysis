@@ -10,7 +10,6 @@ process graphToShapefile {
     input:
         tuple val(key), path(npy), path(edgelist), path(weighted_graph_edgelist)
 
-
     output:
         path "*nodes.*", emit: nodes
         path "*edges.*", emit: edges
