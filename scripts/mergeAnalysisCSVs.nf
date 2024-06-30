@@ -7,15 +7,14 @@ process mergeAnalysisCSVs {
     cpus 4
 
     input:
-        path("*")
+        path("*.csv")
 
     output:
-    path "merged_csv.csv"
-
+        path "merged_csv.csv"
 
     script:
     """
-    merge_csvs.py
+    merge_csvs.py `pwd`
     """
 
 }

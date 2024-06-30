@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import cv2
 import numpy as np
 from PIL import Image
@@ -222,7 +223,7 @@ def write_geotiff(out_ds_path, arr, in_ds):
     band.FlushCache()
 
 
-def get_graph_from_dtm(raster_ds_path, year):
+def get_graph_from_dtm(raster_ds_path: Path, year: str):
     ''' takes a georeferneced digital terrain
     model and with some image processing extracts
     the graph of the polygonal trough networks in
@@ -241,9 +242,9 @@ def get_graph_from_dtm(raster_ds_path, year):
     '''
     # read in digital terrain model. once as georeferenced
     # raster, once as spatial-less np.array.
-    fname = (Path(raster_ds_path).stem)
-    dtm = gdal.Open(raster_ds_path)
-    dtm_np = gdal_array.LoadFile(raster_ds_path)
+    fname = raster_ds_path.stem
+    dtm = gdal.Open(str(raster_ds_path))
+    dtm_np = gdal_array.LoadFile(str(raster_ds_path))
     # detrend the image to return microtopographic image only
     img_det = detrend_dtm(dtm_np, 16)
 
@@ -271,7 +272,6 @@ def get_graph_from_dtm(raster_ds_path, year):
     skel_clu_elim_25 = eliminate_small_clusters(img_skel, 10)
 
     write_geotiff('' + fname + '_skel.tif', skel_clu_elim_25, dtm)
-
 
     # build graph from skeletonized image
     G = sknw.build_sknw(skel_clu_elim_25, multi=False)
@@ -305,25 +305,29 @@ def get_graph_from_dtm(raster_ds_path, year):
     return H, dictio
 
 
+def command_line_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("yearFile", type=Path)
+    parser.add_argument("year", type=str)
+
+    return parser
+
+
+def main():
+    parser = command_line_parser()
+    args = parser.parse_args()
+
+    print(args.year)
+
+    H, dictio = get_graph_from_dtm(args.yearFile, args.year)
+
 
 if __name__ == '__main__':
-    version = sys.argv[2]
-    
-    year = ''
-    
-    if version == '1':
-        year = sys.argv[1].split(".")[0].split("_")[2]
-    elif version == '2':
-        year = sys.argv[1].split(".")[0].split("PERMAX_")[1]
-    elif version == '3':
-        year = sys.argv[1].split(".")[0].split("_")[1]
-
-    print(year)
-    raster_ds_path = sys.argv[1]
-    # raster_ds_path = rf'E:\02_macs_fire_sites\00_working\00_orig-data\03_lidar\product-dem\dtm_1m\proj\cut_to_aoi\PERMAX5_epsg32603_noa_88-99_c.tif'
-
-
-    # raster_ds_path = r'E:\02_macs_fire_sites\00_working\03_code_scripts\IWD_graph_analysis\data\arf_dtm_2009.tif'
-    H, dictio = get_graph_from_dtm(raster_ds_path, year)
-    # print time needed for script execution
-    print(datetime.now() - startTime)
+    try:
+        startTime = datetime.now()
+        main()
+        print(datetime.now() - startTime)
+        sys.exit(0)
+    except Exception as ex:
+        print(f"Unexpected Error: {ex}")
+        sys.exit(1)

@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import argparse
+from pathlib import Path
 import numpy as np
 import networkx as nx
 import sys
@@ -91,7 +93,7 @@ def add_coords_to_edge_id(csv, coord_dict):
     edge_info['geometry'] = geometry
     # print(edge_info)
 
-    #output the dataframe so a shapefile can be built from it after
+    # output the dataframe so a shapefile can be built from it after
     return edge_info
 
 
@@ -100,44 +102,43 @@ def create_line_shp_edges(edge_info_df, save_loc_shp):
     edge_info_gdf.to_file(save_loc_shp, mode='w', driver='ESRI Shapefile')
 
 
-if __name__ == '__main__':
-    startTime = datetime.now()
+def command_line_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("edgelistFile", type=Path)
+    parser.add_argument("npyFile", type=Path)
+    parser.add_argument("weightedGraphFile", type=Path)
 
-    edgelist = sys.argv[1]
-    npy = sys.argv[2]
-    weighted_graph_edgelist = sys.argv[3]
+    return parser
 
-    # edgelist = 'E:/02_macs_fire_sites/00_working/01_processed-data/06_workflow_outputs/03_graphs/arf_graph_1_epsg32603_csp_54_a.edgelist'
-    # npy = 'E:/02_macs_fire_sites/00_working/01_processed-data/06_workflow_outputs/03_graphs/arf_graph_1_epsg32603_csp_54_a_node-coords.npy'
-    # weighted_graph_edgelist = 'E:/02_macs_fire_sites/00_working/01_processed-data/06_workflow_outputs/03_graphs/arf_graph_32603_csp_54_a_avg_weights.edgelist'
 
-    
+def main():
+    np.set_printoptions(threshold=sys.maxsize)
 
-    # edgelist = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/graphs/arf_graph_2009.edgelist'
-    # npy = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/graphs/arf_graph_2009_node-coords.npy'
-    # weighted_graph_edgelist = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/graphs/arf_graph_2009_run20240327_avg_weights.edgelist'
-
-    # # year = edgelist.split('.')[0].split('_')[2]
-    # # shp_loc = 'E:/02_macs_fire_sites/00_working/01_processed-data/06_workflow_outputs/03_graphs/gis_test/'
-    # shp_loc = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data_arf/gis/'
+    parser = command_line_parser()
+    args = parser.parse_args()
 
     # read in 2009 datagraph_2009.csv
-    G, coord_dict = read_graph(edgelist_loc=edgelist, coord_dict_loc=npy)
-    print(edgelist)
-    #aoiName = edgelist.split('.')[0].split('_')[4] + "_" + edgelist.split('.')[0].split('_')[5] + "_" + edgelist.split('.')[0].split('_')[6]
-    aoiName = edgelist.split('.')[0]
+    G, coord_dict = read_graph(edgelist_loc=args.edgelistFile, coord_dict_loc=args.npyFile)
+    print(args.edgelistFile)
+    aoiName = args.edgelistFile.stem
 
     # generate point-shapefile from nodes.
-    # shp_loc = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/gis/'  # where to save
     create_point_shp_nodes(coord_dict, aoiName + '_nodes.shp')
 
     # prepare for shapefiling edges
-    # weighted_graph_edgelist = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/graphs/arf_graph_2009_avg_weights.edgelist'
-    # csv_loc = 'E:/02_macs_fire_sites/00_working/03_code_scripts/IWD_graph_analysis/data/gis/edge_csv.csv'
-    get_edge_info_csv(weighted_graph_edgelist, aoiName + "_edges_csv.csv")
+    get_edge_info_csv(args.weightedGraphFile, aoiName + "_edges_csv.csv")
 
     # shapefile edges
-
-
     edge_info_df = add_coords_to_edge_id(aoiName + "_edges_csv.csv", coord_dict)
     create_line_shp_edges(edge_info_df, aoiName + '_edges.shp')
+
+
+if __name__ == '__main__':
+    try:
+        startTime = datetime.now()
+        main()
+        print(datetime.now() - startTime)
+        sys.exit(0)
+    except Exception as ex:
+        print(f"Unexpected Error: {ex}")
+        sys.exit(1)
