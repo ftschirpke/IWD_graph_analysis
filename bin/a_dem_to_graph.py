@@ -4,25 +4,18 @@ import argparse
 from datetime import datetime
 from pathlib import Path
 import sys
+from typing import Dict
 
 from affine import Affine
 import cv2
 import networkx as nx
 import numpy as np
 from osgeo import gdal, gdal_array
-from PIL import Image
 import scipy
 import scipy.ndimage
 from scipy.ndimage.morphology import generate_binary_structure
 from skimage.morphology import skeletonize_3d
 import sknw
-
-
-def read_data(img):
-    ''' helper function to make reading in DTMs easier '''
-    img1 = Image.open(img)
-    img1 = np.array(img1)
-    return img1
 
 
 def scale_data(img):
@@ -44,18 +37,19 @@ def detrend_dtm(dtm, trend_size):
     returns microtopography of DTM'''
     # there are some random nan rows and cols but they only affect the outermost rows. remove them here:
     subset = dtm[1:-1, 1:-1]
+    # TODO: this occuring twice might be a bug, and not intentional?
     # there are some random nan rows and cols but they only affect the outermost rows. remove them here:
     subset = dtm[1:-1, 1:-1]
+
     reg_trend = scipy.ndimage.uniform_filter(subset, size=trend_size)
     microtop = subset - reg_trend
     microtop = scale_data(microtop)
-    # adaptive threshhold (later) needs int
     # adaptive threshhold (later) needs int
     microtop = convert_to_int(microtop)
     return microtop
 
 
-def eliminate_small_clusters(in_img, cluster_size):
+def eliminate_small_clusters(in_img, cluster_size: int) -> np.ndarray:
     ''' determine the number of distinct features.
     Prepares for then eliminating those clusters with
     < n pixels (to remove potential noise)
@@ -72,9 +66,6 @@ def eliminate_small_clusters(in_img, cluster_size):
     # print(cluster_sizes[1]) --> number of pixels per cluster
     cluster_sizes = np.unique(labeled_array, return_index=False, return_inverse=False, return_counts=True)
 
-    # initialize empty array for setting troughs and non-troughs
-    result = np.zeros_like(labeled_array)
-
     # creates list, that will read True for any clusters with more than x pixels
     trough_bool = []
 
@@ -84,6 +75,8 @@ def eliminate_small_clusters(in_img, cluster_size):
         else:
             trough_bool.append(False)
 
+    # initialize empty array for setting troughs and non-troughs
+    result = np.zeros_like(labeled_array)
     # for loop going through all pixels of the image 'labeled_array'
     # and writing information in 'results'
     for i in range(labeled_array.shape[0]):
@@ -91,12 +84,10 @@ def eliminate_small_clusters(in_img, cluster_size):
             # if it's larger than cluster_size, make it 1
             if trough_bool[labeled_array[i][j]] and labeled_array[i][j] != 0:
                 result[i][j] = 1
-            else:
-                result[i][j] = 0
     return result
 
 
-def make_directed(graph, dtm):
+def make_directed(graph: nx.Graph, dtm) -> nx.DiGraph:
     """ convert graph from nx.Graph()
     to nx.DiGraph() - for each edge (u, v)
     an edge (v, u) is generated.
@@ -109,7 +100,7 @@ def make_directed(graph, dtm):
     :param dtm: original digital elevation
     model (same extent as detrended image,
     as we're working with pixel indices,
-    not spatial coordinates
+    not spatial coordinates)
     :return G_d: a directed graph of
     class nx.DiGraph() with only even or
     downward slope directed edges.
@@ -132,7 +123,7 @@ def make_directed(graph, dtm):
     return G_d
 
 
-def get_node_coord_dict(graph, fwd):
+def get_node_coord_dict(graph: nx.DiGraph, fwd) -> Dict:
     ''' create dictionary with node ID as key
     and node coordinates as values
 
@@ -144,17 +135,11 @@ def get_node_coord_dict(graph, fwd):
     nodes = graph.nodes()
     # get pixel coordinates of nodes --> ps
     ps = np.array([nodes[i]['o'] for i in nodes])
-    # print(ps)
-    # print(ps)
     for i in ps:
-        # print(i)
-        # print('0000')
-        # tfrm = fwd * (i[0], i[1])
         tfrm = fwd * (i[1], i[0])
         i[0] = tfrm[0]
         i[1] = tfrm[1]
-    # print(ps)
-    # print(ps)
+
     # get node ID --> keys
     keys = list(range(len(nodes)))
     keys_str = []
@@ -166,7 +151,7 @@ def get_node_coord_dict(graph, fwd):
     return dictionary
 
 
-def save_graph_with_coords(graph, dict, location):
+def save_graph_with_coords(graph: nx.DiGraph, dictionary: Dict, location: str):
     ''' save graph as edgelist to disk
     and coords for nodes as dictionary
 
@@ -177,16 +162,15 @@ def save_graph_with_coords(graph, dict, location):
     '''
     # save and write Graph as list of edges
     # edge weight 'weight' stores the actual length of the trough in meter
-
-    nx.write_edgelist(graph, location + '.edgelist', data=True)
+    nx.write_edgelist(graph, f"{location}.edgelist", data=True)
 
     # and save coordinates of graph as npy dict to disk
-    fname = location + '_node-coords'
-    print("fname: " + fname)
-    np.save(fname, dict)
+    filename = f"{location}_node-coords"
+    print("filename: " + filename)
+    np.save(filename, dictionary)
 
 
-def write_geotiff(out_ds_path, arr, in_ds):
+def write_geotiff(out_ds_path: str, arr: np.ndarray, in_ds):
     ''' takes an np.array with pixel coordinates and
     gives it the projection of another raster.
     np.array must have same extent as georeferenced
@@ -216,7 +200,7 @@ def write_geotiff(out_ds_path, arr, in_ds):
     band.FlushCache()
 
 
-def get_graph_from_dtm(raster_ds_path: Path, year: str):
+def get_graph_from_dtm(raster_ds_path: Path, year: str) -> (nx.DiGraph, Dict):
     ''' takes a georeferneced digital terrain
     model and with some image processing extracts
     the graph of the polygonal trough networks in
@@ -235,41 +219,37 @@ def get_graph_from_dtm(raster_ds_path: Path, year: str):
     '''
     # read in digital terrain model. once as georeferenced
     # raster, once as spatial-less np.array.
-    fname = raster_ds_path.stem
+    filename = raster_ds_path.stem
     dtm = gdal.Open(str(raster_ds_path))
     dtm_np = gdal_array.LoadFile(str(raster_ds_path))
     # detrend the image to return microtopographic image only
     img_det = detrend_dtm(dtm_np, 16)
 
-    write_geotiff('arf_microtopo_' + year + '.tif', img_det, dtm)
+    write_geotiff(f"arf_microtopo_{year}.tif", img_det, dtm)
 
     # doing adaptive thresholding on the input image
-    thresh2 = cv2.adaptiveThreshold(img_det, img_det.max(), cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV,
-                                    133, 11)
+    thresh2 = cv2.adaptiveThreshold(
+        img_det, img_det.max(), cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 133, 11
+    )
     thresh_unclustered = eliminate_small_clusters(thresh2, 15)
 
     # erode and dilate the features to deal with white noise.
     kernel = np.ones((3, 3), np.uint8)
     its = 2
-    for i in range(1):
-        img = cv2.dilate(np.float32(thresh_unclustered), kernel, iterations=its)
-        closed = cv2.erode(img, kernel, iterations=its)
-    # print(closed)
+    img = cv2.dilate(np.float32(thresh_unclustered), kernel, iterations=its)
+    _ = cv2.erode(img, kernel, iterations=its)
 
     # prepare for both possible skeletonization algorithms
-    # zhang = skeletonize(img)
-    lee = skeletonize_3d(img)
-
-    img_skel = lee
+    img_skel = skeletonize_3d(img)
 
     skel_clu_elim_25 = eliminate_small_clusters(img_skel, 10)
 
-    write_geotiff('' + fname + '_skel.tif', skel_clu_elim_25, dtm)
+    write_geotiff(f"{filename}_skel.tif", skel_clu_elim_25, dtm)
 
     # build graph from skeletonized image
     G = sknw.build_sknw(skel_clu_elim_25, multi=False)
 
-    for (s, e) in G.edges():
+    for s, e in G.edges():
         G[s][e]['pts'] = G[s][e]['pts'].tolist()
 
     geot = dtm.GetGeoTransform()
@@ -278,12 +258,11 @@ def get_graph_from_dtm(raster_ds_path: Path, year: str):
     G_copy = G.copy()
 
     # transform the pixel coordinates to lat/lon for geospatialness
-    for (s, e) in G_copy.edges():
+    for s, e in G_copy.edges():
         for i in G[s][e]['pts']:
             tfrm = fwd * (i[0], i[1])
             i[0] = tfrm[0]
             i[1] = tfrm[1]
-        # print(G[s][e]['pts'])
 
     # and make it a directed graph, since water only flows downslope
     # flow direction is based on elevation information of DTM heights
@@ -292,7 +271,7 @@ def get_graph_from_dtm(raster_ds_path: Path, year: str):
     # save graph and node coordinates
     dictio = get_node_coord_dict(H, fwd)
 
-    save_graph_with_coords(H, dictio, 'arf_graph_' + year)
+    save_graph_with_coords(H, dictio, f"arf_graph_{year}")
 
     dtm = None
     return H, dictio
@@ -314,7 +293,7 @@ def main():
 
     print(args.year)
 
-    H, dictio = get_graph_from_dtm(args.yearFile, args.year)
+    _ = get_graph_from_dtm(args.yearFile, args.year)
 
 
 if __name__ == '__main__':
