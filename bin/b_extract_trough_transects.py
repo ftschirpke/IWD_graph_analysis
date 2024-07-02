@@ -1,39 +1,35 @@
 #!/usr/bin/env python
 
 import argparse
-from pathlib import Path
-import numpy as np
-from PIL import Image
-import sys
-import networkx as nx
-import pickle
-from affine import Affine
-from osgeo import gdal_array
-from osgeo import gdal
 from datetime import datetime
-import re
-from collections import Counter
+from pathlib import Path
+import pickle
+import sys
+from typing import Dict, List, Tuple
 
-# np.set_printoptions(threshold=sys.maxsize)
+from affine import Affine
+import networkx as nx
+import numpy as np
+from osgeo import gdal, gdal_array
 
 
-def read_graph(edgelist_loc: Path, coord_dict_loc: Path):
-    ''' load graph and dict containing coords
+def read_graph(edgelist_loc: Path, coord_dict_loc: Path) -> Tuple[nx.DiGraph, Dict]:
+    """ load graph and dict containing coords
     of graph nodes
 
     :param edgelist_loc: path on disk to the
-    graph's edgelist
+    graph"s edgelist
     :param coord_dict_loc: path on disk to
     the coord_dict_loc
     :return G: rebuilt nx.DiGraph from edgelist
     :return: coord_dict: dictionary with node
     coordinates
-    '''
+    """
     # read edgelist to build graph
-    # we don't use 'read_weighted_edgelist' bc we have two weights and we want
+    # we don"t use "read_weighted_edgelist" bc we have two weights and we want
     # to gather both. rwe somehow cannot cope with this.
-    # the first weight 'weight' actually characterizes the length in pixels of the trough.
-    G = nx.read_edgelist(edgelist_loc, data=True, create_using=nx.DiGraph())
+    # the first weight "weight" actually characterizes the length in pixels of the trough.
+    G = nx.read_edgelist(edgelist_loc, data=True, create_using=nx.DiGraph)
     coord_dict = np.load(coord_dict_loc, allow_pickle=True).item()
 
     return G, coord_dict
@@ -58,7 +54,6 @@ def retrieve_pixel_coords(geo_coord, data_source):
     px, py = reverse_transform * (x, y)
     pixel_coord = int(px), int(py)
 
-    data_array = np.array(data_source.GetRasterBand(1).ReadAsArray())
     return pixel_coord
 
 
@@ -72,7 +67,7 @@ def retrieve_world_coords(pixel_coord, data_source):
 
 
 def has_neighboring_duplicates(values):
-    ''' checks for neighboring same values'''
+    """ checks for neighboring same values"""
     for i in range(len(values) - 1):
         mean_elev = np.mean(values)
         if values[i] == values[i + 1] and values[i] < mean_elev:
@@ -80,8 +75,8 @@ def has_neighboring_duplicates(values):
     return False
 
 
-def get_transects(graph, dtm_np, dtm, width):
-    ''' extract the height from DEM along transects
+def get_transects(graph: nx.DiGraph, dtm_np: np.ndarray, dtm, width: int) -> Dict[Tuple, Dict[Tuple, List]]:
+    """ extract the height from DEM along transects
     perpendicular to the trough line (the graph edge)
 
     When considering pixels a and b, the transect is
@@ -110,20 +105,15 @@ def get_transects(graph, dtm_np, dtm, width):
         - [2]: directionality of transect
         - [3]: transect scenario (see publication)
         - [4]: presence of water
-    '''
+    """
     inner_dictio = []
     edge_val = []
-    empty_edge_nodes = []
     for (s, e) in graph.edges():
         values_inner = []
         keys_inner = []
-        ps = graph[s][e]['pts']  # pixel coordinates for all trough pixels between edge (s, e)
+        ps = graph[s][e]["pts"]  # pixel coordinates for all trough pixels between edge (s, e)
         # iterate through all pixels of a trough except the first and last one and retrieve transect information
         # this skips troughs with length (2 pixels), but they do not hold much information anyway.
-        # print(ps)
-        # for i in ps:
-        #     print(i)
-        #     retrieve_pixel_coords(i, dtm)
         for i in range(1, len(ps) - 1):
             water = False
             keys_inner.append((int(ps[i][0]), int(ps[i][1])))  # x and y coordinates of each of my current edge pixels
@@ -139,7 +129,6 @@ def get_transects(graph, dtm_np, dtm, width):
 
             # make sure to not consider any cases at the border of the image
             # to avoid only partial transects
-            # if minx + width < px_current[0] < maxx-width and miny < px_current[1] < maxy-width:
             if width < px_current[0] < dtm_np.shape[0] - width and width < px_current[1] < dtm_np.shape[1] - width:
                 # now consider the five possible scenarios (see publication for details)
                 # if p, p+1 and p-1 are in the same row (so x-value is the same), do:
@@ -237,9 +226,6 @@ def get_transects(graph, dtm_np, dtm, width):
                     cons_rw = px_current_rw[0]  # and the fixed x-value/col
 
                     # extract the height information from the DEM at the transect locations
-                    # print(f'cons: {cons}')
-                    # print(f'trans_start: {trans_start}')
-                    # print(f'trans_end: {trans_end}')
                     transect_heights = dtm_np[cons, trans_start:trans_end + 1]
                     y = list(range(trans_start_rw, trans_end_rw + 1))
                     x = [cons_rw] * len(y)
@@ -381,26 +367,21 @@ def get_transects(graph, dtm_np, dtm, width):
                 # for catching errors...
                 else:
                     print("I messed up an edge case...")
-                    print("px_prev = {0}, px_current = {1}, px_subs = {2}".format(px_prev, px_current, px_subs))
+                    print(f"px_prev = {px_prev}, px_current = {px_current}, px_subs = {px_subs}")
             else:
                 pass
-                # print("ended up with this wrong edge... image border?")
-                # # print(s, e)  # these are the border cases, but they still have some transects, so all good
-                # print(px_current[0], px_current[1])
         # now recombine all elements to the inner transect dict
-        # print(keys_inner, values_inner)
         dict_inner = dict(zip(keys_inner, values_inner))  # values_inner ist auch schon leer
 
         inner_dictio.append(dict_inner)
         edge_val.append((s, e))
     # combine the extracted transects as dicts to the previously inputted outer-dict.
     dict_outer = dict(zip(edge_val, inner_dictio))
-    # print(inner_dictio)
     return dict_outer
 
 
-def save_obj(obj, name):
-    with open(name + '.pkl', 'wb') as f:
+def save_obj(obj: object, name: str):
+    with open(f"{name}.pkl", "wb") as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 
@@ -412,7 +393,7 @@ def do_analysis(edgelistFile: Path, npyFile: Path, dtmTifFile: Path, year: str):
     # extract transects of 9 meter width: (trough_width*2 + 1 == 9)
     trough_width = 4
     transect_dict = get_transects(H, dtm_np, dtm, trough_width)
-    save_obj(transect_dict, 'arf_transect_dict_' + year)
+    save_obj(transect_dict, f"arf_transect_dict_{year}")
 
 
 def command_line_parser() -> argparse.ArgumentParser:
@@ -432,7 +413,7 @@ def main():
     do_analysis(args.edgelistFile, args.npyFile, args.dtmTifFile, args.year)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         startTime = datetime.now()
         main()

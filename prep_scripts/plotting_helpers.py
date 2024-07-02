@@ -1,18 +1,22 @@
+from collections import Counter
+from datetime import datetime
+import csv
 import pickle
-import scipy
-import scipy.ndimage
+
 import numpy as np
 import networkx as nx
-import csv
+import matplotlib
 import matplotlib.pyplot as plt
 from PIL import Image
+
 from b_extract_trough_transects import read_graph
-from a_dem_to_graph import read_data
-from datetime import datetime
-import matplotlib
-# import seaborn as sns
-# import pandas as pd
-from collections import Counter
+
+
+def read_data(img):
+    ''' helper function to make reading in DTMs easier '''
+    img1 = Image.open(img)
+    img1 = np.array(img1)
+    return img1
 
 
 def load_obj(name):
@@ -58,7 +62,6 @@ def add_params_graph(G, edge_param_dict):
             G[s][e]['water_filled'] = edge_param_dict[(s, e)][7]
             num_full += 1
         else:
-            # print("{} was empty... (border case maybe?)".format(str((s, e))))
             num_emp += 1
     print(num_emp, num_full)
 
@@ -100,12 +103,12 @@ def plot_graph_by_weight(graph, col_parameter, coord_dict, bg):
         # draw edge by weight
         edges = nx.draw_networkx_edges(G_no_borders, pos=tmp_coord_dict, arrows=False, edge_color=colors, edge_cmap=plt.cm.viridis,
                                        width=2, ax=ax, edge_vmin=0, edge_vmax=10)
-                                       # , edge_vmin=np.min(colors), edge_vmax=np.max(colors)
+        # , edge_vmin=np.min(colors), edge_vmax=np.max(colors)
         # # edges = nx.draw_networkx_edges(G_no_borders, pos=coord_dict, arrows=False, edge_color='blue', width=0.75, ax=ax)
         # nodes = nx.draw_networkx_nodes(G_no_borders, pos=tmp_coord_dict, node_size=0.5, node_color='black')
         cmap = plt.cm.viridis
         sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=0, vmax=10))
-                                              # norm=plt.Normalize(vmin=np.min(colors), vmax=np.max(colors))
+        # norm=plt.Normalize(vmin=np.min(colors), vmax=np.max(colors))
         sm.set_array([])
         cbar = plt.colorbar(sm)
         cbar.set_label('width [m]')
@@ -129,14 +132,14 @@ def plot_graph_by_weight(graph, col_parameter, coord_dict, bg):
         ax.imshow(micr, cmap='gray', alpha=0)
         edges = nx.draw_networkx_edges(G_no_borders, pos=tmp_coord_dict, arrows=False, edge_color=colors, edge_cmap=plt.cm.viridis,
                                        width=2, ax=ax, edge_vmin=0, edge_vmax=0.5)
-                                       # , edge_vmin=np.min(colors), edge_vmax=np.max(colors)
+        # , edge_vmin=np.min(colors), edge_vmax=np.max(colors)
         # # edges = nx.draw_networkx_edges(G_no_borders, pos=coord_dict, arrows=False, edge_color='blue', width=0.75, ax=ax)
         nodes = nx.draw_networkx_nodes(G_no_borders, pos=tmp_coord_dict, node_size=0.5, node_color='black')
         # plt.clim(np.min(colors), np.max(colors))
         # plt.colorbar(edges)
         cmap = plt.cm.viridis
         sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=0, vmax=0.5))
-                                              # norm=plt.Normalize(vmin=np.min(colors), vmax=np.max(colors))
+        # norm=plt.Normalize(vmin=np.min(colors), vmax=np.max(colors))
         sm.set_array([])
         cbar = plt.colorbar(sm)
         cbar.set_label('depth [m]')
@@ -200,8 +203,8 @@ def plot_graph_by_weight(graph, col_parameter, coord_dict, bg):
                                    norm=matplotlib.colors.LogNorm(
                                        vmin=3.285928340474751e-07,
                                        vmax=0.0025840540469493443))  # this one's static
-                                   # norm=matplotlib.colors.LogNorm(vmin=np.min(list(nx.edge_betweenness_centrality(graph).values())),
-                                   #                    vmax=np.max(list(nx.edge_betweenness_centrality(graph).values()))))  # this one's dynamic
+        # norm=matplotlib.colors.LogNorm(vmin=np.min(list(nx.edge_betweenness_centrality(graph).values())),
+        #                    vmax=np.max(list(nx.edge_betweenness_centrality(graph).values()))))  # this one's dynamic
         nx.draw(graph, pos=tmp_coord_dict, arrowstyle='->', arrowsize=3.5, width=1, with_labels=False, node_size=0.005,
                 edge_color=np.log(np.array(list(nx.edge_betweenness_centrality(graph).values()))), node_color='black',
                 edge_cmap=cmap)
@@ -248,13 +251,13 @@ def plot_graph_by_weight(graph, col_parameter, coord_dict, bg):
         ax.imshow(micr, cmap='gray', alpha=0)
         # draw edge by weight
         edges = nx.draw_networkx_edges(G_no_borders, pos=tmp_coord_dict, arrows=False, edge_color="blue", edge_cmap=plt.cm.viridis,
-                                       width=colors*2, ax=ax, edge_vmin=0, edge_vmax=1)
-                                       # , edge_vmin=np.min(colors), edge_vmax=np.max(colors)
+                                       width=colors * 2, ax=ax, edge_vmin=0, edge_vmax=1)
+        # , edge_vmin=np.min(colors), edge_vmax=np.max(colors)
         # # edges = nx.draw_networkx_edges(G_no_borders, pos=coord_dict, arrows=False, edge_color='blue', width=0.75, ax=ax)
         # nodes = nx.draw_networkx_nodes(G_no_borders, pos=tmp_coord_dict, node_size=0.05, node_color='blue')
         cmap = plt.cm.viridis
         sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=0, vmax=1))
-                                              # norm=plt.Normalize(vmin=np.min(colors), vmax=np.max(colors))
+        # norm=plt.Normalize(vmin=np.min(colors), vmax=np.max(colors))
         sm.set_array([])
         cbar = plt.colorbar(sm)
         cbar.set_label('fraction')
@@ -457,18 +460,9 @@ def plot_connected_components_size(graph):
     for sub in list(nx.connected_components(G_u)):
         print(type(sub))
         subgraph_sizes.append(len(sub))
-    # subgraph_sizes = sorted(subgraph_sizes, reverse=True)
-    # print(subgraph_sizes)
     count = Counter(subgraph_sizes)
-    # count_sorted = sorted(count, reverse=True)
-    print("subgraph_sizes: {0}".format(subgraph_sizes))
+    print(f"subgraph_sizes: {subgraph_sizes}")
     print(count)
-
-    # plt.figure()
-    # plt.hist(subgraph_sizes, bins=np.max(subgraph_sizes))
-    # plt.title("sub-component sizes")
-    # plt.xlabel("number of nodes")
-    # plt.ylabel("frequency")
 
 
 def node_degree_hist(graph1, graph2):
@@ -501,26 +495,26 @@ def node_degree_hist(graph1, graph2):
     plt.figure(figsize=(4.5, 4.5))
     # plt.style.use('bmh')
     plt.grid(color='gray', linestyle='--', linewidth=0.2, which='both')
-    plt.hist(x_multi, bins=range(1, np.max(degree_list2)+2), density=True, rwidth=0.5, color=['salmon', 'teal'],
+    plt.hist(x_multi, bins=range(1, np.max(degree_list2) + 2), density=True, rwidth=0.5, color=['salmon', 'teal'],
              label=['2009', '2019'])
     plt.axvline(av_degree1, linestyle='--', color='salmon', linewidth=.9)
     plt.axvline(av_degree2, linestyle='--', color='teal', linewidth=.9)
     plt.xticks([1.5, 3.5, 4.5, 5.5, 6.5], [1, 3, 4, 5, 6])
     plt.text(av_degree1 - 0.175, 0.025, 'mean 2009 = {}'.format(np.round(av_degree1, 2)), rotation=90, fontsize=8)
     plt.text(av_degree2 - 0.175, 0.025, 'mean 2019 = {}'.format(np.round(av_degree2, 2)), rotation=90, fontsize=8)
-    plt.text(5.3, 0.015, np.round(x_multi[0].count(5)/len(x_multi[0]), 4), rotation=90, fontsize=8)
-    plt.text(5.55, 0.035, np.round(x_multi[1].count(5)/len(x_multi[1]), 4), rotation=90, fontsize=8)
-    plt.text(6.3, 0.015, np.round(x_multi[0].count(6)/len(x_multi[0]), 4), rotation=90, fontsize=8)
-    plt.text(6.55, 0.015, np.round(x_multi[1].count(6)/len(x_multi[1]), 4), rotation=90, fontsize=8)
+    plt.text(5.3, 0.015, np.round(x_multi[0].count(5) / len(x_multi[0]), 4), rotation=90, fontsize=8)
+    plt.text(5.55, 0.035, np.round(x_multi[1].count(5) / len(x_multi[1]), 4), rotation=90, fontsize=8)
+    plt.text(6.3, 0.015, np.round(x_multi[0].count(6) / len(x_multi[0]), 4), rotation=90, fontsize=8)
+    plt.text(6.55, 0.015, np.round(x_multi[1].count(6) / len(x_multi[1]), 4), rotation=90, fontsize=8)
     plt.legend(frameon=False)
     plt.ylabel('nodes frequency')
     plt.xlabel('degree')
     plt.savefig('./figures/node_degree_hist.png')
 
-    print(f'{np.round(x_multi[0].count(3)/len(x_multi[0]), 4)} have 3 edges in 2009')
-    print(f'{np.round(x_multi[1].count(3)/len(x_multi[1]), 4)} have 3 edges in 2019')
-    print(f'{np.round(x_multi[0].count(1)/len(x_multi[0]), 4)} have 1 edge in 2009 -- total: {x_multi[0].count(1)}')
-    print(f'{np.round(x_multi[1].count(1)/len(x_multi[1]), 4)} have 1 edge in 2019 -- total: {x_multi[1].count(1)}')
+    print(f'{np.round(x_multi[0].count(3) / len(x_multi[0]), 4)} have 3 edges in 2009')
+    print(f'{np.round(x_multi[1].count(3) / len(x_multi[1]), 4)} have 3 edges in 2019')
+    print(f'{np.round(x_multi[0].count(1) / len(x_multi[0]), 4)} have 1 edge in 2009 -- total: {x_multi[0].count(1)}')
+    print(f'{np.round(x_multi[1].count(1) / len(x_multi[1]), 4)} have 1 edge in 2019 -- total: {x_multi[1].count(1)}')
 
 
 def plot_transect_ontop():
@@ -556,10 +550,10 @@ def plot_transect_ontop():
             y = row[1]
             t = list(map(float, row[2:15]))
             data = list(map(float, row[15:28]))
-            data = list(map(lambda elem: (-1)*elem, data))
+            data = list(map(lambda elem: (-1) * elem, data))
             data_gauss_fit = list(map(float, row[28:41]))
             print(data_gauss_fit[0], data_gauss_fit[-1], "---", data[0], data[-1])
-            data_gauss_fit = list(map(lambda elem: (-1)*elem, data_gauss_fit))
+            data_gauss_fit = list(map(lambda elem: (-1) * elem, data_gauss_fit))
             ax.plot(t, data, symbols_dash[i], label='DTM elevation', color=hokusai1_sh[i], alpha=0.5)
             ax.plot(t, data_gauss_fit, symbols[i], color=hokusai1_sh[i], alpha=1)
             plt.tight_layout()
@@ -582,7 +576,6 @@ if __name__ == '__main__':
     # dem2009 = Image.open('./data/a_2009/arf_dtm_2009.tif')
     # img_det2009 = read_data('./data/a_2009/arf_microtopo_2009.tif')
     # dem2009 = np.array(dem2009)
-
 
     # read in 2019 data
     # read in 2019 data
@@ -644,13 +637,11 @@ if __name__ == '__main__':
     # plt.savefig('D:/00_orga/04_proposals_presentations/2021-12-13_agu/figures/water_01_wo-bg_2009')
     # plt.show()
 
-
     # G_19_empty = G_19.edge_subgraph(border_edges_19).copy()
     # plt.figure()
     # edges2 = nx.draw_networkx_edges(G_19, pos=coord_dict_19, arrows=False, edge_color='blue', width=0.2)
     # edges = nx.draw_networkx_edges(G_19_empty, pos=coord_dict_19, arrows=False, edge_color='red', width=2)
     # nodes = nx.draw_networkx_nodes(G_19_empty, pos=coord_dict_19, node_size=2, node_color='black')
-
 
     # G_09_empty = G_09.edge_subgraph(empty_edges_09).copy()
     # plt.figure()
@@ -667,7 +658,6 @@ if __name__ == '__main__':
     # density_depth_width(edge_param_dict=transect_dict_fitted_2019, type="median")
 
     # plot_transect_ontop()
-
 
     print(datetime.now() - startTime)
     # plt.show()
