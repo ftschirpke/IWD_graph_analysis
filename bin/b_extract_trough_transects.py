@@ -1,20 +1,15 @@
 #!/usr/bin/env python
 
 import argparse
-from pathlib import Path
-import numpy as np
-from PIL import Image
-import sys
-import networkx as nx
-import pickle
-from affine import Affine
-from osgeo import gdal_array
-from osgeo import gdal
 from datetime import datetime
-import re
-from collections import Counter
+from pathlib import Path
+import pickle
+import sys
 
-# np.set_printoptions(threshold=sys.maxsize)
+from affine import Affine
+import networkx as nx
+import numpy as np
+from osgeo import gdal, gdal_array
 
 
 def read_graph(edgelist_loc: Path, coord_dict_loc: Path):
