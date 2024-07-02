@@ -307,10 +307,10 @@ def command_line_parser() -> argparse.ArgumentParser:
 
 
 def main():
+    np.set_printoptions(threshold=sys.maxsize)
+
     parser = command_line_parser()
     args = parser.parse_args()
-
-    np.set_printoptions(threshold=sys.maxsize)
 
     print(args.year)
 

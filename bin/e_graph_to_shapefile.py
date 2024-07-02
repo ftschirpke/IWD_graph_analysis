@@ -1,20 +1,19 @@
 #!/usr/bin/env python
 
 import argparse
-from pathlib import Path
-import numpy as np
-import networkx as nx
-import sys
 import ast
-import fiona
 import csv
-import pandas as pd
-from geopandas import GeoDataFrame
-from shapely.geometry import LineString, Point
-from b_extract_trough_transects import read_graph
 from datetime import datetime
+from pathlib import Path
+import sys
 
-pd.set_option('display.max_columns', None)
+import fiona
+from geopandas import GeoDataFrame
+import numpy as np
+import pandas as pd
+from shapely.geometry import LineString, Point
+
+from b_extract_trough_transects import read_graph
 
 
 def create_point_shp_nodes(coord_dict, save_loc_shp):
@@ -112,6 +111,7 @@ def command_line_parser() -> argparse.ArgumentParser:
 
 
 def main():
+    pd.set_option('display.max_columns', None)
     np.set_printoptions(threshold=sys.maxsize)
 
     parser = command_line_parser()
