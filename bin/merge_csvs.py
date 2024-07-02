@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
 import argparse
-import sys
-import pandas as pd
 from datetime import datetime
 from pathlib import Path
+import sys
+
+import pandas as pd
 
 
 def command_line_parser() -> argparse.ArgumentParser:
@@ -18,7 +19,7 @@ def main():
     parser = command_line_parser()
     args = parser.parse_args()
 
-    allCSVs = list(args.workDir.glob('./*.csv'))
+    allCSVs = list(args.workDir.glob('*.csv'))
     combined_csv = pd.concat((pd.read_csv(f) for f in allCSVs))
 
     combined_csv.to_csv("merged_csv.csv", index=False, encoding='utf-8-sig')
