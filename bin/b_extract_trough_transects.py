@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 import pickle
 import sys
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 
 from affine import Affine
 import networkx as nx
@@ -108,7 +108,6 @@ def get_transects(graph: nx.DiGraph, dtm_np: np.ndarray, dtm, width: int) -> Dic
     """
     inner_dictio = []
     edge_val = []
-    empty_edge_nodes = []
     for (s, e) in graph.edges():
         values_inner = []
         keys_inner = []
@@ -368,7 +367,7 @@ def get_transects(graph: nx.DiGraph, dtm_np: np.ndarray, dtm, width: int) -> Dic
                 # for catching errors...
                 else:
                     print("I messed up an edge case...")
-                    print("px_prev = {0}, px_current = {1}, px_subs = {2}".format(px_prev, px_current, px_subs))
+                    print(f"px_prev = {px_prev}, px_current = {px_current}, px_subs = {px_subs}")
             else:
                 pass
         # now recombine all elements to the inner transect dict

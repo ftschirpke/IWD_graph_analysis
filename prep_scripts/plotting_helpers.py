@@ -62,7 +62,6 @@ def add_params_graph(G, edge_param_dict):
             G[s][e]['water_filled'] = edge_param_dict[(s, e)][7]
             num_full += 1
         else:
-            # print("{} was empty... (border case maybe?)".format(str((s, e))))
             num_emp += 1
     print(num_emp, num_full)
 
@@ -461,18 +460,9 @@ def plot_connected_components_size(graph):
     for sub in list(nx.connected_components(G_u)):
         print(type(sub))
         subgraph_sizes.append(len(sub))
-    # subgraph_sizes = sorted(subgraph_sizes, reverse=True)
-    # print(subgraph_sizes)
     count = Counter(subgraph_sizes)
-    # count_sorted = sorted(count, reverse=True)
-    print("subgraph_sizes: {0}".format(subgraph_sizes))
+    print(f"subgraph_sizes: {subgraph_sizes}")
     print(count)
-
-    # plt.figure()
-    # plt.hist(subgraph_sizes, bins=np.max(subgraph_sizes))
-    # plt.title("sub-component sizes")
-    # plt.xlabel("number of nodes")
-    # plt.ylabel("frequency")
 
 
 def node_degree_hist(graph1, graph2):

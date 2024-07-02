@@ -54,7 +54,7 @@ def get_edge_info_csv(weighted_graph: Path, csv_loc: str):
             thisrow.append(row[0])
             thisrow.append(row[1])
             row_as_string = row[2]
-            row_as_string = row_as_string.replace("nan", ""NULL"")
+            row_as_string = row_as_string.replace("nan", "\"NULL\"")
             dicti = ast.literal_eval(row_as_string)
             vals = list(dicti.values())
             for i in list(range(len(vals))):

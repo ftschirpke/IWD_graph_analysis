@@ -59,7 +59,7 @@ def add_params_to_graph(G: nx.DiGraph, edge_param_dict: Dict[Tuple, Dict[Tuple, 
             G[s][e]["water_filled"] = edge_param_dict[(s, e)][7]
             num_full += 1
         else:
-            print("{} doesn"t exist in the edge_param_dict, but only in the Graph.".format(str((s, e))))
+            print(f"{str((s, e))} doesn't exist in the edge_param_dict, but only in the Graph.")
             # probably all of the missing ones are those too close to the image border and thus don"t have any transects
             num_emp += 1
     print(f"empty edges: {num_emp}, full edges: {num_full}")

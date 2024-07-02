@@ -63,7 +63,7 @@ def inner(key, val, out_key):
             gauss_fit = curve_fit(my_gaus, t, data, p0=[1, mean, sigma], maxfev=500000,
                                   bounds=[(-np.inf, -np.inf, 0.01), (np.inf, np.inf, 8.5)])
         except RuntimeError:
-            print("RuntimeError is raised with edge: {0} coords {1} and elevations: {2}".format(out_key, key, val))
+            print(f"RuntimeError is raised with edge: {out_key} coords {key} and elevations: {val}")
             # pass
 
         try:
@@ -81,7 +81,7 @@ def inner(key, val, out_key):
         except Exception:
             # bad error handling:
             if val[4]:
-                print("a water-filled trough can"t be fitted: edge: {}".format(out_key))
+                print(f"a water-filled trough can't be fitted: edge: {out_key}")
             else:
                 raise ValueError(f"Unexpected value for val[4]: {val[4]}")
     else:
@@ -114,7 +114,7 @@ def outer(out_key, inner_dict):
             all_keys.append(key)
             all_vals_upd.append(val_upd)
         except ValueError as err:
-            print("{0} -- {1}".format(out_key, err))
+            print(f"{out_key} -- {err}")
     # recombine keys and vals to return the updated dict
     inner_dict = dict(zip(all_keys, all_vals_upd))
     return inner_dict
