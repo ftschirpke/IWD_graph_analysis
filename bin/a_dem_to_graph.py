@@ -1,28 +1,21 @@
 #!/usr/bin/env python
 
 import argparse
-import cv2
-import numpy as np
-from PIL import Image
+from datetime import datetime
+from pathlib import Path
 import sys
+
+from affine import Affine
+import cv2
+import networkx as nx
+import numpy as np
+from osgeo import gdal, gdal_array
+from PIL import Image
 import scipy
 import scipy.ndimage
-from skimage.morphology import skeletonize, skeletonize_3d
 from scipy.ndimage.morphology import generate_binary_structure
+from skimage.morphology import skeletonize_3d
 import sknw
-import networkx as nx
-from scipy import ndimage
-from osgeo import gdal
-from osgeo import gdal_array
-from affine import Affine
-from pathlib import Path
-from pathlib import Path
-from datetime import datetime
-import matplotlib.pyplot as plt  # remove later
-
-startTime = datetime.now()
-
-np.set_printoptions(threshold=sys.maxsize)
 
 
 def read_data(img):
@@ -53,7 +46,7 @@ def detrend_dtm(dtm, trend_size):
     subset = dtm[1:-1, 1:-1]
     # there are some random nan rows and cols but they only affect the outermost rows. remove them here:
     subset = dtm[1:-1, 1:-1]
-    reg_trend = ndimage.uniform_filter(subset, size=trend_size)
+    reg_trend = scipy.ndimage.uniform_filter(subset, size=trend_size)
     microtop = subset - reg_trend
     microtop = scale_data(microtop)
     # adaptive threshhold (later) needs int
@@ -316,6 +309,8 @@ def command_line_parser() -> argparse.ArgumentParser:
 def main():
     parser = command_line_parser()
     args = parser.parse_args()
+
+    np.set_printoptions(threshold=sys.maxsize)
 
     print(args.year)
 
