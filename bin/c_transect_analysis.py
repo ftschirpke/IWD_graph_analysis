@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 
 import argparse
+from datetime import datetime
 from pathlib import Path
-import sys
 import pickle
+import sys
+
+from joblib import Parallel, delayed
+import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 from scipy.optimize import curve_fit
 from sklearn.metrics import r2_score
-from datetime import datetime
-import matplotlib.pyplot as plt
-from joblib import Parallel, delayed
-import re
 
 
 def load_obj(name):
