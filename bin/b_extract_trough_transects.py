@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 import pickle
 import sys
-from typing import Dict
+from typing import Dict, Tuple
 
 from affine import Affine
 import networkx as nx
@@ -13,7 +13,7 @@ import numpy as np
 from osgeo import gdal, gdal_array
 
 
-def read_graph(edgelist_loc: Path, coord_dict_loc: Path) -> (nx.DiGraph, Dict):
+def read_graph(edgelist_loc: Path, coord_dict_loc: Path) -> Tuple[nx.DiGraph, Dict]:
     ''' load graph and dict containing coords
     of graph nodes
 
@@ -29,7 +29,7 @@ def read_graph(edgelist_loc: Path, coord_dict_loc: Path) -> (nx.DiGraph, Dict):
     # we don't use 'read_weighted_edgelist' bc we have two weights and we want
     # to gather both. rwe somehow cannot cope with this.
     # the first weight 'weight' actually characterizes the length in pixels of the trough.
-    G = nx.read_edgelist(edgelist_loc, data=True, create_using=nx.DiGraph())
+    G = nx.read_edgelist(edgelist_loc, data=True, create_using=nx.DiGraph)
     coord_dict = np.load(coord_dict_loc, allow_pickle=True).item()
 
     return G, coord_dict
@@ -75,7 +75,7 @@ def has_neighboring_duplicates(values):
     return False
 
 
-def get_transects(graph: nx.DiGraph, dtm_np: np.ndarray, dtm, width: int) -> Dict:
+def get_transects(graph: nx.DiGraph, dtm_np: np.ndarray, dtm, width: int) -> Dict[Tuple, Dict[Tuple, List]]:
     ''' extract the height from DEM along transects
     perpendicular to the trough line (the graph edge)
 
@@ -381,7 +381,7 @@ def get_transects(graph: nx.DiGraph, dtm_np: np.ndarray, dtm, width: int) -> Dic
     return dict_outer
 
 
-def save_obj(obj, name: str):
+def save_obj(obj: object, name: str):
     with open(f"{name}.pkl", "wb") as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 

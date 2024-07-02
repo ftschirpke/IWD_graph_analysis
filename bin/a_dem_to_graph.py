@@ -4,7 +4,7 @@ import argparse
 from datetime import datetime
 from pathlib import Path
 import sys
-from typing import Dict
+from typing import Dict, Tuple
 
 from affine import Affine
 import cv2
@@ -200,7 +200,7 @@ def write_geotiff(out_ds_path: str, arr: np.ndarray, in_ds):
     band.FlushCache()
 
 
-def get_graph_from_dtm(raster_ds_path: Path, year: str) -> (nx.DiGraph, Dict):
+def get_graph_from_dtm(raster_ds_path: Path, year: str) -> Tuple[nx.DiGraph, Dict]:
     ''' takes a georeferneced digital terrain
     model and with some image processing extracts
     the graph of the polygonal trough networks in
