@@ -15,12 +15,12 @@ from sklearn.metrics import r2_score
 
 
 def load_obj(name: Union[Path, str]) -> object:
-    with open(name, 'rb') as f:
+    with open(name, "rb") as f:
         return pickle.load(f)
 
 
 def inner(key, val, out_key):
-    ''' fits a gaussian to every transect
+    """ fits a gaussian to every transect
     height profile and adds transect parameters
     to the dictionary.
 
@@ -33,13 +33,13 @@ def inner(key, val, out_key):
     - val[5] = fwhm_gauss --> transect width
     - val[6] = mean_gauss --> transect depth
     - val[7] = cod_gauss --> r2 of fit
-    '''
+    """
 
     # implement the gaussian function
     def my_gaus(x, a, mu, sigma):
         return a * np.exp(-(x - mu) ** 2 / (2 * sigma ** 2))
 
-    # check if there's a transect to fit in the first place
+    # check if there"s a transect to fit in the first place
     # (some transects at the image edge/corner might be empty) --> but there are none
     if len(val[0]) != 0:
         # flip the transect along x-axis to be able to fit the Gaussian
@@ -58,12 +58,12 @@ def inner(key, val, out_key):
         sigma = np.sqrt(sum(data * (t - mean) ** 2) / N) + 1  # estimate for sigma is determined via the underlying data
         # + 1 to avoid division by 0 for flat transects
 
-        # now fit the Gaussian & raise error for those that can't be fitted
+        # now fit the Gaussian & raise error for those that can"t be fitted
         try:
             gauss_fit = curve_fit(my_gaus, t, data, p0=[1, mean, sigma], maxfev=500000,
                                   bounds=[(-np.inf, -np.inf, 0.01), (np.inf, np.inf, 8.5)])
         except RuntimeError:
-            print('RuntimeError is raised with edge: {0} coords {1} and elevations: {2}'.format(out_key, key, val))
+            print("RuntimeError is raised with edge: {0} coords {1} and elevations: {2}".format(out_key, key, val))
             # pass
 
         try:
@@ -81,7 +81,7 @@ def inner(key, val, out_key):
         except Exception:
             # bad error handling:
             if val[4]:
-                print("a water-filled trough can't be fitted: edge: {}".format(out_key))
+                print("a water-filled trough can"t be fitted: edge: {}".format(out_key))
             else:
                 raise ValueError(f"Unexpected value for val[4]: {val[4]}")
     else:
@@ -91,7 +91,7 @@ def inner(key, val, out_key):
 
 
 def outer(out_key, inner_dict):
-    ''' iterate through all transects of a
+    """ iterate through all transects of a
     single trough and send to inner()
     where gaussian will be fitted.
 
@@ -103,7 +103,7 @@ def outer(out_key, inner_dict):
     and info on directionality/type
     :return inner_dict: updated inner_dict with old
     inner_values + transect width, height, r2 in val
-    '''
+    """
     all_keys = []
     all_vals_upd = []
     # iterate through all transects of a trough
@@ -114,14 +114,14 @@ def outer(out_key, inner_dict):
             all_keys.append(key)
             all_vals_upd.append(val_upd)
         except ValueError as err:
-            print('{0} -- {1}'.format(out_key, err))
+            print("{0} -- {1}".format(out_key, err))
     # recombine keys and vals to return the updated dict
     inner_dict = dict(zip(all_keys, all_vals_upd))
     return inner_dict
 
 
 def fit_gaussian_parallel(dict_soil: Dict[Tuple, Dict[Tuple, List]]) -> Dict[Tuple, Dict[Tuple, List]]:
-    '''iterate through edges of the graph (in dict
+    """iterate through edges of the graph (in dict
     form) and send each trough to a free CPU core
     --> prepare fitting a Gaussian function
     to the extracted transects in dict_soil
@@ -148,7 +148,7 @@ def fit_gaussian_parallel(dict_soil: Dict[Tuple, Dict[Tuple, List]]) -> Dict[Tup
         - val[5] = fwhm_gauss --> transect width
         - val[6] = mean_gauss --> transect depth
         - val[7] = cod_gauss --> r2 of fit
-    '''
+    """
     all_outer_keys = []
     # parallelize into n_jobs different jobs/CPU cores
     out = Parallel(n_jobs=20)(delayed(outer)(out_key, inner_dict) for out_key, inner_dict in dict_soil.items())
@@ -167,7 +167,7 @@ def save_obj(obj: object, name: str):
 
 
 def get_trough_avgs_gauss(transect_dict_fitted: Dict[Tuple, Dict[Tuple, List]]) -> Dict[Tuple, Dict[Tuple, List]]:
-    ''' gather all width/depth/r2 parameters of
+    """ gather all width/depth/r2 parameters of
     each transect and compute mean/median
     parameter per trough. Add mean/median per
     trough to the dict.
@@ -178,7 +178,7 @@ def get_trough_avgs_gauss(transect_dict_fitted: Dict[Tuple, Dict[Tuple, List]]) 
     :return mean_trough_params: a copy of the
     transect_dict_fitted with added mean trough
     parameters to the outer dict as values.
-    '''
+    """
     mean_trough_params = {}
     empty_edges = []
 
@@ -232,7 +232,7 @@ def get_trough_avgs_gauss(transect_dict_fitted: Dict[Tuple, Dict[Tuple, List]]) 
 
 
 def plot_param_hists_box_width(transect_dict_orig_fitted_09, transect_dict_orig_fitted_19):
-    ''' print statistics for
+    """ print statistics for
     all transect widths distribution for
     two points in time and for all vs.
     filtered results.
@@ -241,7 +241,7 @@ def plot_param_hists_box_width(transect_dict_orig_fitted_09, transect_dict_orig_
     dictionary of 2009 situation
     :param transect_dict_orig_fitted_19:
     dictionary of 2019 situation
-    '''
+    """
     all_widths_09 = []
     hi_widths_09 = []
 
@@ -264,22 +264,22 @@ def plot_param_hists_box_width(transect_dict_orig_fitted_09, transect_dict_orig_
 
     print("WIDTH")
     print("r2 > 0.8")
-    print(f'median width: \t 2009: {np.median(hi_widths_09)} \t 2019: {np.median(hi_widths_19)}')
-    print(f'mean width: \t 2009: {np.mean(hi_widths_09)} \t 2019: {np.mean(hi_widths_19)}')
-    print(f'min width: \t 2009: {np.min(hi_widths_09)} \t 2019: {np.min(hi_widths_19)}')
-    print(f'max width: \t 2009: {np.max(hi_widths_09)} \t 2019: {np.max(hi_widths_19)}')
-    print(f'std width: \t 2009: {np.std(hi_widths_09)} \t 2019: {np.std(hi_widths_19)}')
+    print(f"median width: \t 2009: {np.median(hi_widths_09)} \t 2019: {np.median(hi_widths_19)}")
+    print(f"mean width: \t 2009: {np.mean(hi_widths_09)} \t 2019: {np.mean(hi_widths_19)}")
+    print(f"min width: \t 2009: {np.min(hi_widths_09)} \t 2019: {np.min(hi_widths_19)}")
+    print(f"max width: \t 2009: {np.max(hi_widths_09)} \t 2019: {np.max(hi_widths_19)}")
+    print(f"std width: \t 2009: {np.std(hi_widths_09)} \t 2019: {np.std(hi_widths_19)}")
     print("all r2")
-    print(f'median width: \t 2009: {np.median(all_widths_09)} \t 2019: {np.median(all_widths_19)}')
-    print(f'mean width: \t 2009: {np.mean(all_widths_09)} \t 2019: {np.mean(all_widths_19)}')
-    print(f'min width: \t 2009: {np.min(all_widths_09)} \t 2019: {np.min(all_widths_19)}')
-    print(f'max width: \t 2009: {np.max(all_widths_09)} \t 2019: {np.max(all_widths_19)}')
-    print(f'std width: \t 2009: {np.std(all_widths_09)} \t 2019: {np.std(all_widths_19)}')
+    print(f"median width: \t 2009: {np.median(all_widths_09)} \t 2019: {np.median(all_widths_19)}")
+    print(f"mean width: \t 2009: {np.mean(all_widths_09)} \t 2019: {np.mean(all_widths_19)}")
+    print(f"min width: \t 2009: {np.min(all_widths_09)} \t 2019: {np.min(all_widths_19)}")
+    print(f"max width: \t 2009: {np.max(all_widths_09)} \t 2019: {np.max(all_widths_19)}")
+    print(f"std width: \t 2009: {np.std(all_widths_09)} \t 2019: {np.std(all_widths_19)}")
     print("______________________________________________________________")
 
 
 def plot_param_hists_box_depth(transect_dict_orig_fitted_09: Dict, transect_dict_orig_fitted_19: Dict):
-    ''' print statistics for
+    """ print statistics for
     all transect depths distribution for
     two points in time and for all vs.
     filtered results.
@@ -288,7 +288,7 @@ def plot_param_hists_box_depth(transect_dict_orig_fitted_09: Dict, transect_dict
     dictionary of 2009 situation
     :param transect_dict_orig_fitted_19:
     dictionary of 2019 situation
-    '''
+    """
     all_depths_09 = []
     hi_depths_09 = []
 
@@ -311,22 +311,22 @@ def plot_param_hists_box_depth(transect_dict_orig_fitted_09: Dict, transect_dict
 
     print("DEPTH")
     print("r2 > 0.8")
-    print(f'median depths: \t 2009: {np.median(hi_depths_09)} \t 2019: {np.median(hi_depths_19)}')
-    print(f'mean depths: \t 2009: {np.mean(hi_depths_09)} \t 2019: {np.mean(hi_depths_19)}')
-    print(f'min depths: \t 2009: {np.min(hi_depths_09)} \t 2019: {np.min(hi_depths_19)}')
-    print(f'max depths: \t 2009: {np.max(hi_depths_09)} \t 2019: {np.max(hi_depths_19)}')
-    print(f'std depths: \t 2009: {np.std(hi_depths_09)} \t 2019: {np.std(hi_depths_19)}')
+    print(f"median depths: \t 2009: {np.median(hi_depths_09)} \t 2019: {np.median(hi_depths_19)}")
+    print(f"mean depths: \t 2009: {np.mean(hi_depths_09)} \t 2019: {np.mean(hi_depths_19)}")
+    print(f"min depths: \t 2009: {np.min(hi_depths_09)} \t 2019: {np.min(hi_depths_19)}")
+    print(f"max depths: \t 2009: {np.max(hi_depths_09)} \t 2019: {np.max(hi_depths_19)}")
+    print(f"std depths: \t 2009: {np.std(hi_depths_09)} \t 2019: {np.std(hi_depths_19)}")
     print("all r2")
-    print(f'median depths: \t 2009: {np.median(all_depths_09)} \t 2019: {np.median(all_depths_19)}')
-    print(f'mean depths: \t 2009: {np.mean(all_depths_09)} \t 2019: {np.mean(all_depths_19)}')
-    print(f'min depths: \t 2009: {np.min(all_depths_09)} \t 2019: {np.min(all_depths_19)}')
-    print(f'max depths: \t 2009: {np.max(all_depths_09)} \t 2019: {np.max(all_depths_19)}')
-    print(f'std depths: \t 2009: {np.std(all_depths_09)} \t 2019: {np.std(all_depths_19)}')
+    print(f"median depths: \t 2009: {np.median(all_depths_09)} \t 2019: {np.median(all_depths_19)}")
+    print(f"mean depths: \t 2009: {np.mean(all_depths_09)} \t 2019: {np.mean(all_depths_19)}")
+    print(f"min depths: \t 2009: {np.min(all_depths_09)} \t 2019: {np.min(all_depths_19)}")
+    print(f"max depths: \t 2009: {np.max(all_depths_09)} \t 2019: {np.max(all_depths_19)}")
+    print(f"std depths: \t 2009: {np.std(all_depths_09)} \t 2019: {np.std(all_depths_19)}")
     print("______________________________________________________________")
 
 
 def plot_param_hists_box_cod(transect_dict_orig_fitted_09, transect_dict_orig_fitted_19):
-    ''' plot and save histogram and boxplot
+    """ plot and save histogram and boxplot
     of all transect r2 of fits for
     two points in time and for all vs.
     filtered results.
@@ -336,7 +336,7 @@ def plot_param_hists_box_cod(transect_dict_orig_fitted_09, transect_dict_orig_fi
     :param transect_dict_orig_fitted_19:
     dictionary of 2019 situation
     :return: plot with hist and boxplot
-    '''
+    """
     all_cods_09 = []
     hi_cods_09 = []
     cod_neg_09 = 0
@@ -353,7 +353,7 @@ def plot_param_hists_box_cod(transect_dict_orig_fitted_09, transect_dict_orig_fi
                 if trans_info[7] > 0.8:
                     hi_cods_09.append(trans_info[7])
 
-    print(f'{(cod_neg_09 * 100) / (cod_neg_09 + cod_pos_09)} of all fits had a r2 < 0')
+    print(f"{(cod_neg_09 * 100) / (cod_neg_09 + cod_pos_09)} of all fits had a r2 < 0")
 
     all_cods_19 = []
     hi_cods_19 = []
@@ -371,26 +371,26 @@ def plot_param_hists_box_cod(transect_dict_orig_fitted_09, transect_dict_orig_fi
                 if trans_info[7] > 0.8:
                     hi_cods_19.append(trans_info[7])
 
-    print(f'{(cod_neg_19 * 100) / (cod_neg_19 + cod_pos_19)} of all fits had a r2 < 0')
+    print(f"{(cod_neg_19 * 100) / (cod_neg_19 + cod_pos_19)} of all fits had a r2 < 0")
 
     print("R2")
     print("r2 > 0.8")
-    print(f'median r2: \t 2009: {np.median(hi_cods_09)} \t 2019: {np.median(hi_cods_19)}')
-    print(f'mean r2: \t 2009: {np.mean(hi_cods_09)} \t 2019: {np.mean(hi_cods_19)}')
-    print(f'min r2: \t 2009: {np.min(hi_cods_09)} \t 2019: {np.min(hi_cods_19)}')
-    print(f'max r2: \t 2009: {np.max(hi_cods_09)} \t 2019: {np.max(hi_cods_19)}')
-    print(f'std r2: \t 2009: {np.std(hi_cods_09)} \t 2019: {np.std(hi_cods_19)}')
+    print(f"median r2: \t 2009: {np.median(hi_cods_09)} \t 2019: {np.median(hi_cods_19)}")
+    print(f"mean r2: \t 2009: {np.mean(hi_cods_09)} \t 2019: {np.mean(hi_cods_19)}")
+    print(f"min r2: \t 2009: {np.min(hi_cods_09)} \t 2019: {np.min(hi_cods_19)}")
+    print(f"max r2: \t 2009: {np.max(hi_cods_09)} \t 2019: {np.max(hi_cods_19)}")
+    print(f"std r2: \t 2009: {np.std(hi_cods_09)} \t 2019: {np.std(hi_cods_19)}")
     print("all r2")
-    print(f'median r2: \t 2009: {np.median(all_cods_09)} \t 2019: {np.median(all_cods_19)}')
-    print(f'mean r2: \t 2009: {np.mean(all_cods_09)} \t 2019: {np.mean(all_cods_19)}')
-    print(f'min r2: \t 2009: {np.min(all_cods_09)} \t 2019: {np.min(all_cods_19)}')
-    print(f'max r2: \t 2009: {np.max(all_cods_09)} \t 2019: {np.max(all_cods_19)}')
-    print(f'std r2: \t 2009: {np.std(all_cods_09)} \t 2019: {np.std(all_cods_19)}')
+    print(f"median r2: \t 2009: {np.median(all_cods_09)} \t 2019: {np.median(all_cods_19)}")
+    print(f"mean r2: \t 2009: {np.mean(all_cods_09)} \t 2019: {np.mean(all_cods_19)}")
+    print(f"min r2: \t 2009: {np.min(all_cods_09)} \t 2019: {np.min(all_cods_19)}")
+    print(f"max r2: \t 2009: {np.max(all_cods_09)} \t 2019: {np.max(all_cods_19)}")
+    print(f"std r2: \t 2009: {np.std(all_cods_09)} \t 2019: {np.std(all_cods_19)}")
     print("______________________________________________________________")
 
 
 def plot_legend(transect_dict_orig_fitted_09, transect_dict_orig_fitted_19):
-    ''' save histogram and boxplot
+    """ save histogram and boxplot
     of all transect depths distribution for
     two points in time and for all vs.
     filtered results.
@@ -399,7 +399,7 @@ def plot_legend(transect_dict_orig_fitted_09, transect_dict_orig_fitted_19):
     dictionary of 2009 situation
     :param transect_dict_orig_fitted_19:
     dictionary of 2019 situation
-    '''
+    """
     all_depths_09 = []
     hi_depths_09 = []
 
@@ -422,82 +422,82 @@ def plot_legend(transect_dict_orig_fitted_09, transect_dict_orig_fitted_19):
                     hi_depths_19.append(trans_info[6])
 
     # do the plotting
-    boxplotprops_09 = {'patch_artist': True,
-                       'boxprops': dict(facecolor='salmon'),
-                       'flierprops': dict(marker='o', markerfacecolor='salmon', markersize=0.5, linestyle='none'),
-                       'medianprops': dict(color='salmon')}
-    boxplotprops_19 = {'patch_artist': True,
-                       'boxprops': dict(facecolor='teal'),
-                       'flierprops': dict(marker='o', markerfacecolor='teal', markersize=0.5, linestyle='none'),
-                       'medianprops': dict(color='teal')}
+    boxplotprops_09 = {"patch_artist": True,
+                       "boxprops": dict(facecolor="salmon"),
+                       "flierprops": dict(marker="o", markerfacecolor="salmon", markersize=0.5, linestyle="none"),
+                       "medianprops": dict(color="salmon")}
+    boxplotprops_19 = {"patch_artist": True,
+                       "boxprops": dict(facecolor="teal"),
+                       "flierprops": dict(marker="o", markerfacecolor="teal", markersize=0.5, linestyle="none"),
+                       "medianprops": dict(color="teal")}
     fig, axes = plt.subplots(nrows=3, ncols=1, sharex=True, figsize=(6, 5), dpi=300,
-                             gridspec_kw={'wspace': 0, 'hspace': 0, 'height_ratios': [2, 2, 6]})
+                             gridspec_kw={"wspace": 0, "hspace": 0, "height_ratios": [2, 2, 6]})
 
     median_09 = np.percentile(hi_depths_09, 50)
     median_19 = np.percentile(hi_depths_19, 50)
 
     # 2009 boxplot
     axes[0].boxplot(hi_depths_09, 1, vert=False, widths=0.5, **boxplotprops_09)
-    axes[0].axvline(median_09, linestyle='--', color='salmon', alpha=.9, linewidth=.9)
+    axes[0].axvline(median_09, linestyle="--", color="salmon", alpha=.9, linewidth=.9)
     axes[0].set_yticks([])
     axes[0].set_yticklabels([])
-    axes[0].spines['top'].set_visible(False)
-    axes[0].spines['right'].set_visible(False)
-    axes[0].spines['bottom'].set_visible(False)
-    axes[0].spines['left'].set_visible(False)
-    axes[0].set_ylabel('2009', weight='bold')
+    axes[0].spines["top"].set_visible(False)
+    axes[0].spines["right"].set_visible(False)
+    axes[0].spines["bottom"].set_visible(False)
+    axes[0].spines["left"].set_visible(False)
+    axes[0].set_ylabel("2009", weight="bold")
 
     # 2019 boxplot
     axes[1].boxplot(hi_depths_19, 1, vert=False, widths=0.5, **boxplotprops_19)
-    axes[1].axvline(median_19, linestyle='--', color='teal', alpha=.9, linewidth=.9)
+    axes[1].axvline(median_19, linestyle="--", color="teal", alpha=.9, linewidth=.9)
     axes[1].set_yticks([])
     axes[1].set_yticklabels([])
-    axes[1].spines['top'].set_visible(False)
-    axes[1].spines['right'].set_visible(False)
-    axes[1].spines['bottom'].set_visible(False)
-    axes[1].spines['left'].set_visible(False)
-    axes[1].set_ylabel('2019', weight='bold')
+    axes[1].spines["top"].set_visible(False)
+    axes[1].spines["right"].set_visible(False)
+    axes[1].spines["bottom"].set_visible(False)
+    axes[1].spines["left"].set_visible(False)
+    axes[1].set_ylabel("2019", weight="bold")
 
     # histogram
     # 2009
-    axes[2].hist(all_depths_09, bins=np.arange(0.0, 1.0, 0.02), range=(0, 15), histtype='step', color='peachpuff',
+    axes[2].hist(all_depths_09, bins=np.arange(0.0, 1.0, 0.02), range=(0, 15), histtype="step", color="peachpuff",
                  label=r"all transects")
-    axes[2].hist(hi_depths_09, bins=np.arange(0.0, 1.0, 0.02), range=(0, 15), histtype='step', color='salmon',
+    axes[2].hist(hi_depths_09, bins=np.arange(0.0, 1.0, 0.02), range=(0, 15), histtype="step", color="salmon",
                  label=r"transects w/ $r^2 > 0.8$")
-    axes[2].axvline(median_09, linestyle='--', color='salmon', alpha=.9, linewidth=.9,
+    axes[2].axvline(median_09, linestyle="--", color="salmon", alpha=.9, linewidth=.9,
                     label="median")
     # 2019
-    axes[2].hist(all_depths_19, bins=np.arange(0.0, 1.0, 0.02), range=(0, 15), histtype='step', color='powderblue',
+    axes[2].hist(all_depths_19, bins=np.arange(0.0, 1.0, 0.02), range=(0, 15), histtype="step", color="powderblue",
                  label=r"all transects")
-    axes[2].hist(hi_depths_19, bins=np.arange(0.0, 1.0, 0.02), range=(0, 15), histtype='step', color='teal',
+    axes[2].hist(hi_depths_19, bins=np.arange(0.0, 1.0, 0.02), range=(0, 15), histtype="step", color="teal",
                  label=r"transects w/ $r^2 > 0.8$")
-    axes[2].axvline(median_19, linestyle='--', color='teal', alpha=.9, linewidth=.9,
+    axes[2].axvline(median_19, linestyle="--", color="teal", alpha=.9, linewidth=.9,
                     label="median")
 
-    axes[2].set_ylabel('frequency')
-    axes[2].set_xlabel('depth [m]')
+    axes[2].set_ylabel("frequency")
+    axes[2].set_xlabel("depth [m]")
 
     # prepare legend
     handles, labels = axes[2].get_legend_handles_labels()
     order = [2, 3, 0, 4, 5, 1]
-    plt.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper center',
+    plt.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc="upper center",
                bbox_to_anchor=(0.775, 0.875), ncol=1, frameon=False, fontsize=9)
-    plt.gcf().text(0.56, 0.416, r'2009', fontsize=10, weight='bold', rotation=90)
-    plt.gcf().text(0.56, 0.305, r'2019', fontsize=10, weight='bold', rotation=90)
+    plt.gcf().text(0.56, 0.416, r"2009", fontsize=10, weight="bold", rotation=90)
+    plt.gcf().text(0.56, 0.305, r"2019", fontsize=10, weight="bold", rotation=90)
 
-    plt.savefig('./figures/legend.png')
+    plt.savefig("./figures/legend.png")
 
 
 def do_analysis(transectFile: Path, year: str, fit_gaussian: bool = True) -> Tuple[Dict, Dict]:
     if fit_gaussian:
         transect_dict: Dict[Tuple, Dict[Tuple, List]] = load_obj(transectFile)
         transect_dict_fitted = fit_gaussian_parallel(transect_dict)
-        save_obj(transect_dict_fitted, f'transect_dict_fitted_{year}')
+        save_obj(transect_dict_fitted, f"transect_dict_fitted_{year}")
 
-    transect_dict_fitted: Dict[Tuple, Dict[Tuple, List]] = load_obj(f'transect_dict_fitted_{year}.pkl')
+    transect_dict_fitted: Dict[Tuple, Dict[Tuple, List]] = load_obj(f"transect_dict_fitted_{year}.pkl")
     edge_param_dict: Dict[Tuple, Dict[Tuple, List]] = get_trough_avgs_gauss(transect_dict_fitted)
 
-    save_obj(edge_param_dict, f'transect_dict_avg_{year}')
+    save_obj(edge_param_dict, f"transect_dict_avg_{year}")
 
     return transect_dict_fitted, edge_param_dict
 
@@ -519,7 +519,7 @@ def main():
     _ = do_analysis(args.pklFile, args.year, fit_gaussian=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         startTime = datetime.now()
         main()

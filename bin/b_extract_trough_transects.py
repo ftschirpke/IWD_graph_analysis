@@ -14,21 +14,21 @@ from osgeo import gdal, gdal_array
 
 
 def read_graph(edgelist_loc: Path, coord_dict_loc: Path) -> Tuple[nx.DiGraph, Dict]:
-    ''' load graph and dict containing coords
+    """ load graph and dict containing coords
     of graph nodes
 
     :param edgelist_loc: path on disk to the
-    graph's edgelist
+    graph"s edgelist
     :param coord_dict_loc: path on disk to
     the coord_dict_loc
     :return G: rebuilt nx.DiGraph from edgelist
     :return: coord_dict: dictionary with node
     coordinates
-    '''
+    """
     # read edgelist to build graph
-    # we don't use 'read_weighted_edgelist' bc we have two weights and we want
+    # we don"t use "read_weighted_edgelist" bc we have two weights and we want
     # to gather both. rwe somehow cannot cope with this.
-    # the first weight 'weight' actually characterizes the length in pixels of the trough.
+    # the first weight "weight" actually characterizes the length in pixels of the trough.
     G = nx.read_edgelist(edgelist_loc, data=True, create_using=nx.DiGraph)
     coord_dict = np.load(coord_dict_loc, allow_pickle=True).item()
 
@@ -67,7 +67,7 @@ def retrieve_world_coords(pixel_coord, data_source):
 
 
 def has_neighboring_duplicates(values):
-    ''' checks for neighboring same values'''
+    """ checks for neighboring same values"""
     for i in range(len(values) - 1):
         mean_elev = np.mean(values)
         if values[i] == values[i + 1] and values[i] < mean_elev:
@@ -76,7 +76,7 @@ def has_neighboring_duplicates(values):
 
 
 def get_transects(graph: nx.DiGraph, dtm_np: np.ndarray, dtm, width: int) -> Dict[Tuple, Dict[Tuple, List]]:
-    ''' extract the height from DEM along transects
+    """ extract the height from DEM along transects
     perpendicular to the trough line (the graph edge)
 
     When considering pixels a and b, the transect is
@@ -105,14 +105,14 @@ def get_transects(graph: nx.DiGraph, dtm_np: np.ndarray, dtm, width: int) -> Dic
         - [2]: directionality of transect
         - [3]: transect scenario (see publication)
         - [4]: presence of water
-    '''
+    """
     inner_dictio = []
     edge_val = []
     empty_edge_nodes = []
     for (s, e) in graph.edges():
         values_inner = []
         keys_inner = []
-        ps = graph[s][e]['pts']  # pixel coordinates for all trough pixels between edge (s, e)
+        ps = graph[s][e]["pts"]  # pixel coordinates for all trough pixels between edge (s, e)
         # iterate through all pixels of a trough except the first and last one and retrieve transect information
         # this skips troughs with length (2 pixels), but they do not hold much information anyway.
         for i in range(1, len(ps) - 1):
@@ -414,7 +414,7 @@ def main():
     do_analysis(args.edgelistFile, args.npyFile, args.dtmTifFile, args.year)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         startTime = datetime.now()
         main()

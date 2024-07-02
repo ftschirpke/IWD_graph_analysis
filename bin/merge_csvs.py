@@ -19,13 +19,13 @@ def main():
     parser = command_line_parser()
     args = parser.parse_args()
 
-    allCSVs = list(args.workDir.glob('*.csv'))
+    allCSVs = list(args.workDir.glob("*.csv"))
     combined_csv = pd.concat((pd.read_csv(f) for f in allCSVs))
 
-    combined_csv.to_csv("merged_csv.csv", index=False, encoding='utf-8-sig')
+    combined_csv.to_csv("merged_csv.csv", index=False, encoding="utf-8-sig")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         startTime = datetime.now()
         main()
