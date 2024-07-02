@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 
 import argparse
-from pathlib import Path
-import sys
-import pickle
+from collections import Counter, OrderedDict
 import csv
+from datetime import datetime
+from pathlib import Path
+import pickle
+import sys
+
 import numpy as np
 import networkx as nx
-import matplotlib.pyplot as plt
-from collections import Counter, OrderedDict
+
 from b_extract_trough_transects import read_graph
-from datetime import datetime
 
 
 def load_obj(name):
