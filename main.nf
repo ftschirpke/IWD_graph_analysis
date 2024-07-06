@@ -28,13 +28,13 @@ workflow {
     transectAnalysis(extractTroughTransects.out)
     
     networkAnalysisInput = demToGraph.out.npy_edgelist_tup.join(demToGraph.out.skel_tup)
-    networkAnalysisInput = networkAnalysisInput.join(transectAnalysis.out)
+    networkAnalysisInput = networkAnalysisInput.join(transectAnalysis.out.tup)
     networkAnalysis(networkAnalysisInput)
 
     graphToShapefileInput = demToGraph.out.npy_edgelist_tup.join(networkAnalysis.out.weightedEdgelist)
     graphToShapefile(graphToShapefileInput)
 
-    csvs = networkAnalysis.out.csvs.flatten().buffer( size: Integer.MAX_VALUE, remainder: true )
+    csvs = networkAnalysis.out.csvs.flatten().collect()
     mergeAnalysisCSVs(csvs)
 
 }

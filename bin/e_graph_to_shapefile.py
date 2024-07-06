@@ -101,8 +101,8 @@ def create_line_shp_edges(edge_info_df: pd.DataFrame, save_loc_shp: str):
 
 def command_line_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
-    parser.add_argument("edgelistFile", type=Path)
     parser.add_argument("npyFile", type=Path)
+    parser.add_argument("edgelistFile", type=Path)
     parser.add_argument("weightedGraphFile", type=Path)
 
     return parser

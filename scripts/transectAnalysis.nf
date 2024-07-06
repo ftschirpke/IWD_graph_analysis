@@ -11,7 +11,8 @@ process transectAnalysis {
         tuple val(key), path(pkl), val(year)
 
     output:
-        tuple val(key), val(year), path("*transect_dict_avg*"), path("*transect_dict_fitted_*"), emit: tup
+        tuple val(key), path("*transect_dict_avg*"), val(year), emit: tup
+        path("*transect_dict_fitted_*")
         
     script:
     """

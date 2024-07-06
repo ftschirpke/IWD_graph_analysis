@@ -16,7 +16,7 @@ process graphToShapefile {
 
     script:
     """
-    e_graph_to_shapefile.py ${edgelist} ${npy} ${weighted_graph_edgelist}
+    e_graph_to_shapefile.py ${npy} ${edgelist} ${weighted_graph_edgelist}
     """
 
 }

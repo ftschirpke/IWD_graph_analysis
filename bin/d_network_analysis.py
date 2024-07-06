@@ -158,9 +158,9 @@ def do_analysis(graph: nx.DiGraph):
 
 def command_line_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
-    parser.add_argument("tifFile", type=Path)
-    parser.add_argument("edgelistFile", type=Path)
     parser.add_argument("npyFile", type=Path)
+    parser.add_argument("edgelistFile", type=Path)
+    parser.add_argument("tifFile", type=Path)
     parser.add_argument("dictAvgFile", type=Path)
     parser.add_argument("year", type=str)
 
